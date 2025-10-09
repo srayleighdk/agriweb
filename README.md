@@ -1,36 +1,162 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgriWeb - Agricultural Investment Platform
+
+A comprehensive platform connecting farmers and investors for sustainable agriculture.
+
+## Project Structure
+
+```
+agriweb.com          → Main application (Farmer + Investor portals)
+admin.agriweb.com    → Admin CMS
+```
+
+## Features
+
+### Main Application (agriweb.com)
+- **Landing Page**: Public homepage with platform information
+- **Authentication**: Login/Register for farmers and investors
+- **Farmer Portal**: Manage farmlands, crops, livestock, and funding requests
+- **Investor Portal**: Browse opportunities, make investments, track returns
+
+### Admin CMS (admin.agriweb.com)
+- **Dashboard**: Overview statistics and metrics
+- **User Management**: Manage all users (farmers, investors, admins)
+- **Farmer Management**: Verify farmers, manage farmlands
+- **Investor Management**: Verify investors, manage portfolios
+- **Investment Management**: Approve/reject requests, track funding
+- **Agricultural Data**: Manage plants, crop varieties, animals, breeds
+- **Location Management**: Manage provinces and communes
+- **Notifications**: System-wide notification management
+- **Reports**: Analytics and data export
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **UI Components**: Radix UI + shadcn/ui
+- **State Management**: Zustand
+- **Data Fetching**: SWR + Axios
+- **Forms**: React Hook Form + Zod
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **Backend**: NestJS (agridb)
+- **Database**: PostgreSQL with Prisma
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 20+
+- npm/yarn/pnpm/bun
+
+### Installation
+
+```bash
+npm install
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
+- Main app: [http://localhost:3000](http://localhost:3000)
+- Admin CMS: [http://admin.localhost:3000](http://admin.localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file:
 
-## Learn More
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/
+│   ├── (main)/              # Main application routes
+│   │   ├── page.tsx         # Landing page
+│   │   ├── login/           # Login page
+│   │   ├── register/        # Registration page
+│   │   ├── farmer/          # Farmer portal
+│   │   └── investor/        # Investor portal
+│   ├── admin/               # Admin CMS routes
+│   │   ├── page.tsx         # Admin dashboard
+│   │   ├── users/           # User management
+│   │   ├── farmers/         # Farmer management
+│   │   ├── investors/       # Investor management
+│   │   └── ...
+│   └── layout.tsx           # Root layout
+├── components/
+│   ├── layout/              # Layout components
+│   │   ├── AdminSidebar.tsx
+│   │   └── AdminHeader.tsx
+│   └── ui/                  # UI components (shadcn)
+├── lib/
+│   ├── api/                 # API client
+│   └── utils.ts             # Utilities
+├── store/
+│   └── auth.ts              # Auth state management
+├── types/
+│   └── index.ts             # TypeScript types
+└── middleware.ts            # Subdomain routing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
+## Subdomain Routing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The middleware handles subdomain-based routing:
+- `agriweb.com` → Main application
+- `admin.agriweb.com` → Admin CMS
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For local development:
+- `localhost:3000` → Main application
+- `admin.localhost:3000` → Admin CMS
+
+## Backend API
+
+The backend (agridb) runs on `http://localhost:3000/api` and provides:
+- Authentication (JWT + OAuth)
+- User management
+- Farmland & crop management
+- Investment system
+- Agricultural data
+- Notifications
+- File uploads
+
+## Development Roadmap
+
+### Phase 1: Foundation ✅
+- [x] Project structure with subdomain routing
+- [x] Authentication pages (login/register)
+- [x] Admin CMS layout (sidebar, header)
+- [x] Basic dashboards (admin, farmer, investor)
+- [x] Auth store with Zustand
+
+### Phase 2: Core Features (In Progress)
+- [ ] API integration
+- [ ] User management CRUD
+- [ ] Farmer profile & verification
+- [ ] Investor profile & verification
+- [ ] Investment request workflow
+
+### Phase 3: Advanced Features
+- [ ] Farmland & crop management
+- [ ] Livestock management
+- [ ] Diary system
+- [ ] Notification system
+- [ ] File upload system
+
+### Phase 4: Analytics & Polish
+- [ ] Reports and charts
+- [ ] Data export (PDF/Excel)
+- [ ] Performance optimization
+- [ ] UI/UX refinements
+
+## License
+
+Private project
+# agriweb
