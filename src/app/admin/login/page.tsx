@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/api/auth';
 import { useAuthStore } from '@/store/auth';
@@ -48,23 +49,17 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
       <div className="max-w-md w-full space-y-8 p-8">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
-            <svg
-              className="h-10 w-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
+          <div className="mx-auto mb-4 flex justify-center">
+            <Image 
+              src="/appicon.png" 
+              alt="Nông nghiệp tái sinh Logo" 
+              width={80} 
+              height={80}
+              className="object-contain rounded-lg border-2 border-gray-600"
+            />
           </div>
-          <h2 className="text-3xl font-bold text-white">Admin Portal</h2>
-          <p className="mt-2 text-gray-400">Sign in to access the CMS</p>
+          <h2 className="text-3xl font-bold text-white">Nông nghiệp tái sinh</h2>
+          <p className="mt-2 text-gray-400">Quản Trị Viên</p>
         </div>
 
         <form className="mt-8 space-y-6 bg-gray-800 p-8 rounded-lg shadow-xl" onSubmit={handleSubmit}>
@@ -80,7 +75,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="admin@agriweb.com"
+                placeholder="admin@nongnghieptaisinh.com"
               />
             </div>
             <div>
@@ -132,7 +127,7 @@ export default function AdminLoginPage() {
 
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            © 2024 AgriWeb. All rights reserved.
+            © 2025 Nông nghiệp tái sinh. Bảo lưu mọi quyền.
           </p>
         </div>
       </div>

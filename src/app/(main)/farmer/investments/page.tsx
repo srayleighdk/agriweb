@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FarmerNav from '@/components/layout/FarmerNav';
+import Toast from '@/components/ui/Toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,9 @@ export default function FarmerInvestmentsPage() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [filter, setFilter] = useState<InvestmentStatus | 'ALL'>('ALL');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     fetchInvestments();
@@ -43,8 +47,12 @@ export default function FarmerInvestmentsPage() {
     try {
       setLoading(true);
       const params = filter !== 'ALL' ? { status: filter } : {};
+      console.log('Fetching investments with params:', params);
       const data = await farmerInvestmentsService.getMyInvestments(params);
-      setInvestments(data.data || []);
+      console.log('API Response:', data);
+      console.log('Is array:', Array.isArray(data));
+      // Backend returns array directly, not paginated response
+      setInvestments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch investments:', error);
       setInvestments([]);
@@ -81,20 +89,31 @@ export default function FarmerInvestmentsPage() {
     );
   };
 
-  const getFundingPercentage = (investment: FarmerInvestment) => {
-    return Math.min((investment.currentFunding / investment.fundingGoal) * 100, 100);
+  const getFundingPercentage = (investment: any) => {
+    const current = Number(investment.currentFunding || investment.currentAmount || 0);
+    const goal = Number(investment.fundingGoal || investment.requestedAmount || 0);
+    if (goal === 0) return 0;
+    return Math.min((current / goal) * 100, 100);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Bạn có chắc chắn muốn xóa dự án này?')) return;
     try {
       await farmerInvestmentsService.deleteInvestment(id);
-      alert('Xóa thành công!');
-      fetchInvestments();
-      fetchStats();
-    } catch (error) {
+      setToastMessage('Xóa dự án thành công!');
+      setToastType('success');
+      setShowToast(true);
+
+      // Reload data after deletion
+      setTimeout(() => {
+        fetchInvestments();
+        fetchStats();
+      }, 1000);
+    } catch (error: any) {
       console.error('Failed to delete investment:', error);
-      alert('Xóa thất bại!');
+      setToastMessage(error.response?.data?.message || 'Xóa dự án thất bại!');
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
@@ -224,14 +243,40 @@ export default function FarmerInvestmentsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">Chưa có dự án nào</p>
-                  <Button
-                    onClick={() => router.push('/farmer/investments/new')}
-                    className="mt-4 bg-green-600 hover:bg-green-700"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tạo dự án đầu tiên
-                  </Button>
+                  {filter === 'ALL' ? (
+                    <>
+                      <p className="text-gray-600 text-lg">Chưa có dự án nào</p>
+                      <Button
+                        onClick={() => router.push('/farmer/investments/new')}
+                        className="mt-4 bg-green-600 hover:bg-green-700"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Tạo dự án đầu tiên
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-600 text-lg">
+                        Không có dự án nào với trạng thái{' '}
+                        {filter === 'PENDING'
+                          ? 'Chờ duyệt'
+                          : filter === 'APPROVED'
+                          ? 'Đã duyệt'
+                          : filter === 'ACTIVE'
+                          ? 'Đang gọi vốn'
+                          : filter === 'COMPLETED'
+                          ? 'Hoàn thành'
+                          : 'Từ chối'}
+                      </p>
+                      <Button
+                        onClick={() => setFilter('ALL')}
+                        variant="outline"
+                        className="mt-4"
+                      >
+                        Xem tất cả dự án
+                      </Button>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -260,10 +305,10 @@ export default function FarmerInvestmentsPage() {
                       <Progress value={getFundingPercentage(investment)} className="h-2" />
                       <div className="flex justify-between text-sm mt-2">
                         <span className="text-green-600 font-semibold">
-                          {(investment.currentFunding / 1000000).toFixed(0)}M VNĐ
+                          {((Number(investment.currentFunding || investment.currentAmount || 0)) / 1000000).toFixed(0)}M VNĐ
                         </span>
                         <span className="text-gray-600">
-                          / {(investment.fundingGoal / 1000000).toFixed(0)}M VNĐ
+                          / {((Number(investment.fundingGoal || investment.requestedAmount || 0)) / 1000000).toFixed(0)}M VNĐ
                         </span>
                       </div>
                     </div>
@@ -276,7 +321,7 @@ export default function FarmerInvestmentsPage() {
                           <span>Lợi nhuận kỳ vọng</span>
                         </div>
                         <p className="font-semibold text-green-600">
-                          {investment.expectedReturn}%
+                          {Number(investment.expectedReturn || 0)}%
                         </p>
                       </div>
                       <div>
@@ -284,7 +329,7 @@ export default function FarmerInvestmentsPage() {
                           <Calendar className="h-4 w-4" />
                           <span>Thời gian</span>
                         </div>
-                        <p className="font-semibold">{investment.returnPeriod} tháng</p>
+                        <p className="font-semibold">{Number(investment.returnPeriod || investment.duration || 0)} tháng</p>
                       </div>
                       <div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -292,7 +337,7 @@ export default function FarmerInvestmentsPage() {
                           <span>Đầu tư tối thiểu</span>
                         </div>
                         <p className="font-semibold">
-                          {(investment.minInvestment / 1000000).toFixed(0)}M VNĐ
+                          {((Number(investment.minInvestment || investment.minimumInvestment || 0)) / 1000000).toFixed(0)}M VNĐ
                         </p>
                       </div>
                       <div>
@@ -342,6 +387,14 @@ export default function FarmerInvestmentsPage() {
           </div>
         </div>
       </div>
+
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </>
   );
 }

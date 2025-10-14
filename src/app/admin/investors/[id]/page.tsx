@@ -189,14 +189,14 @@ export default function InvestorDetailPage() {
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Portfolio Value</div>
-          <div className="text-xl font-bold mt-1">${investor.portfolioValue.toLocaleString()}</div>
+          <div className="text-xl font-bold mt-1">₫{investor.portfolioValue.toLocaleString()}</div>
           <div className="text-xs mt-1 text-gray-600">
             Risk: {investor.riskTolerance}
           </div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Total Invested</div>
-          <div className="text-xl font-bold mt-1">${investor.totalInvested.toLocaleString()}</div>
+          <div className="text-xl font-bold mt-1">₫{investor.totalInvested.toLocaleString()}</div>
           <div className="text-xs mt-1 text-gray-600">
             Active: {investor.activeInvestments}
           </div>
@@ -324,19 +324,19 @@ export default function InvestorDetailPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Annual Income</label>
                   <div className="text-xl font-bold text-gray-900">
-                    ${investor.annualIncome?.toLocaleString() || '-'}
+                    ₫{investor.annualIncome?.toLocaleString() || '-'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Net Worth</label>
                   <div className="text-xl font-bold text-gray-900">
-                    ${investor.netWorth?.toLocaleString() || '-'}
+                    ₫{investor.netWorth?.toLocaleString() || '-'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Available Funds</label>
                   <div className="text-xl font-bold text-gray-900">
-                    ${investor.totalAvailableFunds?.toLocaleString() || '-'}
+                    ₫{investor.totalAvailableFunds?.toLocaleString() || '-'}
                   </div>
                 </div>
               </div>
@@ -346,11 +346,11 @@ export default function InvestorDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Investment</label>
-                    <div className="text-gray-900">${investor.minInvestmentAmount?.toLocaleString() || '-'}</div>
+                    <div className="text-gray-900">₫{investor.minInvestmentAmount?.toLocaleString() || '-'}</div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Investment</label>
-                    <div className="text-gray-900">${investor.maxInvestmentAmount?.toLocaleString() || '-'}</div>
+                    <div className="text-gray-900">₫{investor.maxInvestmentAmount?.toLocaleString() || '-'}</div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Duration</label>
@@ -386,19 +386,19 @@ export default function InvestorDetailPage() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-sm text-gray-500 mb-1">Portfolio Value</div>
                   <div className="text-2xl font-bold text-gray-900">
-                    ${investor.portfolioValue.toLocaleString()}
+                    ₫{investor.portfolioValue.toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-sm text-gray-500 mb-1">Total Invested</div>
                   <div className="text-2xl font-bold text-green-600">
-                    ${investor.totalInvested.toLocaleString()}
+                    ₫{investor.totalInvested.toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-sm text-gray-500 mb-1">Total Returned</div>
                   <div className="text-2xl font-bold text-blue-600">
-                    ${investor.totalReturned.toLocaleString()}
+                    ₫{investor.totalReturned.toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -459,7 +459,7 @@ export default function InvestorDetailPage() {
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
                             <div className="text-gray-500">Amount</div>
-                            <div className="font-medium">${investment.amount.toLocaleString()}</div>
+                            <div className="font-medium">₫{investment.amount.toLocaleString()}</div>
                           </div>
                           <div>
                             <div className="text-gray-500">Expected Return</div>

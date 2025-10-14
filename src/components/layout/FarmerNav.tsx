@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,9 +13,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sprout, LayoutDashboard, MapPin, DollarSign, BookOpen, User, LogOut, Menu, X, Bell, Home, Beef } from 'lucide-react';
+import { LayoutDashboard, MapPin, DollarSign, BookOpen, User, LogOut, Menu, X, Bell, Home, Beef, Sprout } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
+import NotificationDropdown from '@/components/notifications/NotificationDropdown';
 
 export default function FarmerNav() {
   const pathname = usePathname();
@@ -54,12 +56,16 @@ export default function FarmerNav() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/farmer/dashboard" className="flex items-center space-x-2">
-            <div className="bg-green-600 p-2 rounded-lg">
-              <Sprout className="h-6 w-6 text-white" />
-            </div>
+            <Image 
+              src="/appicon.png" 
+              alt="Nông nghiệp tái sinh Logo" 
+              width={40} 
+              height={40}
+              className="object-contain rounded-lg border-2 border-gray-300"
+            />
             <div className="hidden sm:block">
-              <span className="text-lg font-bold text-gray-900">AgriWeb</span>
-              <span className="text-xs text-gray-500 block -mt-1">Farmer Portal</span>
+              <span className="text-lg font-bold text-gray-900">Nông nghiệp tái sinh</span>
+              <span className="text-xs text-gray-500 block -mt-1">Cổng Nông Dân</span>
             </div>
           </Link>
 
@@ -95,10 +101,7 @@ export default function FarmerNav() {
             </Link>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-            </Button>
+            <NotificationDropdown />
 
             {/* User Menu */}
             <DropdownMenu>
@@ -112,7 +115,7 @@ export default function FarmerNav() {
                   </Avatar>
                   <div className="text-left">
                     <p className="text-sm font-medium text-gray-900">{user?.name || 'Nông dân'}</p>
-                    <p className="text-xs text-gray-500">{user?.email || 'farmer@agriweb.com'}</p>
+                    <p className="text-xs text-gray-500">{user?.email || 'farmer@nongnghieptaisinh.com'}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>

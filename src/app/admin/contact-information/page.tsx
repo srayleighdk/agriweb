@@ -126,7 +126,7 @@ export default function ContactInformationPage() {
                   id="companyName"
                   value={formData.companyName}
                   onChange={(e) => handleChange('companyName', e.target.value)}
-                  placeholder="VD: AgriWeb"
+                  placeholder="VD: Nông nghiệp tái sinh"
                 />
               </div>
               <div>
@@ -164,7 +164,7 @@ export default function ContactInformationPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="VD: info@agriweb.com"
+                  placeholder="VD: info@nongnghieptaisinh.com"
                 />
               </div>
               <div>
@@ -182,7 +182,7 @@ export default function ContactInformationPage() {
                   id="website"
                   value={formData.website}
                   onChange={(e) => handleChange('website', e.target.value)}
-                  placeholder="VD: https://agriweb.com"
+                  placeholder="VD: https://nongnghieptaisinh.com"
                 />
               </div>
               <div className="md:col-span-2">
@@ -219,7 +219,7 @@ export default function ContactInformationPage() {
                   id="facebook"
                   value={formData.facebook}
                   onChange={(e) => handleChange('facebook', e.target.value)}
-                  placeholder="https://facebook.com/agriweb"
+                  placeholder="https://facebook.com/nongnghieptaisinh"
                 />
               </div>
               <div>
@@ -228,7 +228,7 @@ export default function ContactInformationPage() {
                   id="twitter"
                   value={formData.twitter}
                   onChange={(e) => handleChange('twitter', e.target.value)}
-                  placeholder="https://twitter.com/agriweb"
+                  placeholder="https://twitter.com/nongnghieptaisinh"
                 />
               </div>
               <div>
@@ -237,7 +237,7 @@ export default function ContactInformationPage() {
                   id="linkedin"
                   value={formData.linkedin}
                   onChange={(e) => handleChange('linkedin', e.target.value)}
-                  placeholder="https://linkedin.com/company/agriweb"
+                  placeholder="https://linkedin.com/company/nongnghieptaisinh"
                 />
               </div>
               <div>
@@ -246,7 +246,7 @@ export default function ContactInformationPage() {
                   id="instagram"
                   value={formData.instagram}
                   onChange={(e) => handleChange('instagram', e.target.value)}
-                  placeholder="https://instagram.com/agriweb"
+                  placeholder="https://instagram.com/nongnghieptaisinh"
                 />
               </div>
               <div className="md:col-span-2">
@@ -255,7 +255,7 @@ export default function ContactInformationPage() {
                   id="youtube"
                   value={formData.youtube}
                   onChange={(e) => handleChange('youtube', e.target.value)}
-                  placeholder="https://youtube.com/agriweb"
+                  placeholder="https://youtube.com/nongnghieptaisinh"
                 />
               </div>
             </CardContent>

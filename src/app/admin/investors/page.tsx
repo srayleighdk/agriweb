@@ -243,10 +243,10 @@ export default function InvestorsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          ${investor.portfolioValue.toLocaleString()}
+                          ₫{investor.portfolioValue.toLocaleString()}
                         </div>
                         <div className="text-xs text-gray-500">
-                          Đã đầu tư: ${investor.totalInvested.toLocaleString()}
+                          Đã đầu tư: ₫{investor.totalInvested.toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

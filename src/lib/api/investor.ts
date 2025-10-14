@@ -36,18 +36,35 @@ class InvestorService {
   }
 
   /**
-   * Get investor statistics
+   * Get investor statistics (calculated from actual investments)
    */
   async getStats(): Promise<InvestorStats> {
-    const response = await apiClient.get<InvestorStats>('/investor/stats');
+    // Get actual portfolio data instead of cached stats
+    const portfolioData = await this.getPortfolioSummary();
+
+    return {
+      totalInvested: portfolioData.totalInvested || 0,
+      activeInvestments: portfolioData.activeInvestments || 0,
+      completedInvestments: portfolioData.completedInvestments || 0,
+      totalReturns: portfolioData.totalReturned || 0,
+      roi: portfolioData.averageROI || 0,
+      portfolioValue: portfolioData.portfolioValue || 0,
+    };
+  }
+
+  /**
+   * Get investor portfolio (list of investments)
+   */
+  async getPortfolio(): Promise<any[]> {
+    const response = await apiClient.get('/investor-investments');
     return response.data;
   }
 
   /**
-   * Get investor portfolio
+   * Get portfolio summary statistics
    */
-  async getPortfolio(): Promise<any> {
-    const response = await apiClient.get('/auth/investor/portfolio');
+  async getPortfolioSummary(): Promise<any> {
+    const response = await apiClient.get('/investor-investments/portfolio');
     return response.data;
   }
 
@@ -56,6 +73,21 @@ class InvestorService {
    */
   async updateProfile(data: any): Promise<InvestorProfile> {
     const response = await apiClient.put<InvestorProfile>('/auth/profile/investor', data);
+    return response.data;
+  }
+
+  /**
+   * Create a new investment
+   */
+  async createInvestment(data: {
+    farmerInvestmentId: number;
+    amount: number;
+    expectedReturn?: number;
+    returnDate?: string;
+    notes?: string;
+    contractDocument?: string;
+  }): Promise<any> {
+    const response = await apiClient.post('/investor-investments', data);
     return response.data;
   }
 }

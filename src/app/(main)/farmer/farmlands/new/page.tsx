@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FarmerNav from '@/components/layout/FarmerNav';
-import { MapPin, ArrowRight, ArrowLeft, Check, Droplet, Zap } from 'lucide-react';
+import { MapPin, ArrowRight, ArrowLeft, Check, Droplet, Zap, AlertCircle } from 'lucide-react';
 import { farmlandsService } from '@/lib/api/farmlands';
+import { farmerService } from '@/lib/api/farmer';
 import { tinhService, Tinh, Xa } from '@/lib/api/tinh';
+import Toast from '@/components/ui/Toast';
 import dynamic from 'next/dynamic';
 
 const GoogleMapPicker = dynamic(() => import('@/components/maps/GoogleMapPicker'), {
@@ -24,6 +26,7 @@ export default function NewFarmlandPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const startWithMap = searchParams.get('step') === 'map';
+  const isOnboarding = searchParams.get('onboarding') === 'true';
 
   const [currentStep, setCurrentStep] = useState(startWithMap ? 0 : 0);
   const [formData, setFormData] = useState({
@@ -45,6 +48,9 @@ export default function NewFarmlandPage() {
   const [communes, setCommunes] = useState<Xa[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(null);
   const [streetAddress, setStreetAddress] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     // Initialize map when component mounts
@@ -156,13 +162,23 @@ export default function NewFarmlandPage() {
       await farmlandsService.createFarmland(submitData);
 
       // Show success notification
-      alert('✅ Tạo đất canh tác thành công!');
+      setToastMessage('Tạo đất canh tác thành công!');
+      setToastType('success');
+      setShowToast(true);
 
-      // Navigate to farmlands page
-      router.push('/farmer/farmlands');
+      // Navigate to dashboard if onboarding, otherwise to farmlands page after a brief delay
+      setTimeout(() => {
+        if (isOnboarding) {
+          router.push('/farmer/dashboard');
+        } else {
+          router.push('/farmer/farmlands');
+        }
+      }, 1500);
     } catch (error: any) {
       console.error('Failed to create farmland:', error);
-      alert('❌ ' + (error.response?.data?.message || 'Tạo đất canh tác thất bại'));
+      setToastMessage(error.response?.data?.message || 'Tạo đất canh tác thất bại');
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setLoading(false);
     }
@@ -200,8 +216,14 @@ export default function NewFarmlandPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Thêm đất canh tác mới</h1>
-            <p className="text-gray-600 mt-2">Hoàn thành các bước để thêm đất canh tác của bạn</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {isOnboarding ? '🌱 Chào mừng! Hãy tạo đất canh tác đầu tiên' : 'Thêm đất canh tác mới'}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {isOnboarding
+                ? 'Để bắt đầu, hãy thêm thông tin về đất canh tác của bạn'
+                : 'Hoàn thành các bước để thêm đất canh tác của bạn'}
+            </p>
           </div>
 
           {/* Progress Steps */}
@@ -551,6 +573,13 @@ export default function NewFarmlandPage() {
           </div>
         </div>
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </>
   );
 }

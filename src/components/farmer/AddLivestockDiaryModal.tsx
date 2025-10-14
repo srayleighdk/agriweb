@@ -44,7 +44,9 @@ export default function AddLivestockDiaryModal({ livestockId, onClose, onSuccess
       setLivestock(data);
     } catch (error) {
       console.error('Failed to load livestock:', error);
-      alert('Không thể tải danh sách vật nuôi');
+      setToastMessage('Không thể tải danh sách vật nuôi');
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setLoadingLivestock(false);
     }
@@ -79,7 +81,7 @@ export default function AddLivestockDiaryModal({ livestockId, onClose, onSuccess
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-t-2xl">

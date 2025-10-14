@@ -7,6 +7,8 @@ import {
   CheckCircle, XCircle, Clock, FileText, Target, BarChart3
 } from 'lucide-react';
 import { investmentsService, Investment, InvestmentStatus } from '@/lib/api/investments';
+import Toast from '@/components/ui/Toast';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 export default function InvestmentDetailPage() {
   const params = useParams();
@@ -17,6 +19,21 @@ export default function InvestmentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: 'danger' | 'warning' | 'info';
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     loadInvestment();
@@ -45,17 +62,44 @@ export default function InvestmentDetailPage() {
       [InvestmentStatus.CANCELLED]: 'Hủy bỏ',
     };
 
-    if (!confirm(`${statusNames[status] || 'Thay đổi trạng thái'} đầu tư này?`)) return;
+    const statusDescriptions = {
+      [InvestmentStatus.APPROVED]: 'Bạn có chắc chắn muốn phê duyệt đầu tư này không?',
+      [InvestmentStatus.REJECTED]: 'Bạn có chắc chắn muốn từ chối đầu tư này không? Hành động này không thể hoàn tác.',
+      [InvestmentStatus.ACTIVE]: 'Bạn có chắc chắn muốn kích hoạt đầu tư này không?',
+      [InvestmentStatus.COMPLETED]: 'Bạn có chắc chắn muốn đánh dấu đầu tư này là hoàn thành không?',
+      [InvestmentStatus.CANCELLED]: 'Bạn có chắc chắn muốn hủy bỏ đầu tư này không?',
+    };
 
-    try {
-      setUpdating(true);
-      await investmentsService.updateInvestmentStatus(parseInt(investmentId), status);
-      await loadInvestment();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Không thể cập nhật trạng thái');
-    } finally {
-      setUpdating(false);
-    }
+    const variants = {
+      [InvestmentStatus.APPROVED]: 'info' as const,
+      [InvestmentStatus.REJECTED]: 'danger' as const,
+      [InvestmentStatus.ACTIVE]: 'info' as const,
+      [InvestmentStatus.COMPLETED]: 'info' as const,
+      [InvestmentStatus.CANCELLED]: 'danger' as const,
+    };
+
+    setConfirmDialog({
+      open: true,
+      title: statusNames[status] || 'Thay đổi trạng thái',
+      description: statusDescriptions[status] || 'Bạn có chắc chắn muốn thực hiện hành động này không?',
+      variant: variants[status] || 'info',
+      onConfirm: async () => {
+        try {
+          setUpdating(true);
+          await investmentsService.updateInvestmentStatus(parseInt(investmentId), status);
+          await loadInvestment();
+          setToastMessage(`Đã ${statusNames[status]?.toLowerCase()} thành công`);
+          setToastType('success');
+          setShowToast(true);
+        } catch (err: any) {
+          setToastMessage(err.response?.data?.message || 'Không thể cập nhật trạng thái');
+          setToastType('error');
+          setShowToast(true);
+        } finally {
+          setUpdating(false);
+        }
+      },
+    });
   };
 
   if (loading) {
@@ -209,11 +253,11 @@ export default function InvestmentDetailPage() {
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Số tiền yêu cầu</div>
-          <div className="text-xl font-bold mt-1">${investment.requestedAmount.toLocaleString()}</div>
+          <div className="text-xl font-bold mt-1">₫{investment.requestedAmount.toLocaleString()}</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Đã huy động</div>
-          <div className="text-xl font-bold mt-1">${investment.currentAmount.toLocaleString()}</div>
+          <div className="text-xl font-bold mt-1">₫{investment.currentAmount.toLocaleString()}</div>
           <div className="text-xs text-gray-600 mt-1">{fundingProgress.toFixed(1)}%</div>
         </div>
       </div>
@@ -254,13 +298,13 @@ export default function InvestmentDetailPage() {
                 <div>
                   <div className="text-sm text-gray-500">Mục tiêu</div>
                   <div className="text-lg font-bold text-gray-900">
-                    ${investment.requestedAmount.toLocaleString()}
+                    ₫{investment.requestedAmount.toLocaleString()}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Đã huy động</div>
                   <div className="text-lg font-bold text-green-600">
-                    ${investment.currentAmount.toLocaleString()}
+                    ₫{investment.currentAmount.toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -453,6 +497,21 @@ export default function InvestmentDetailPage() {
           </div>
         </div>
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant={confirmDialog.variant}
+        onConfirm={confirmDialog.onConfirm}
+      />
     </div>
   );
 }

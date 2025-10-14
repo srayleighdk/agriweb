@@ -4,10 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Send, X } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import Toast from '@/components/ui/Toast';
 
 export default function NewNotificationPage() {
   const router = useRouter();
   const [sending, setSending] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [formData, setFormData] = useState({
     title: '',
     message: '',
@@ -43,7 +47,9 @@ export default function NewNotificationPage() {
       await apiClient.post('/admin/notifications', data);
       router.push('/admin/notifications');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to send notification');
+      setToastMessage(err.response?.data?.message || 'Failed to send notification');
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setSending(false);
     }
@@ -262,6 +268,13 @@ export default function NewNotificationPage() {
           </div>
         </div>
       </form>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }

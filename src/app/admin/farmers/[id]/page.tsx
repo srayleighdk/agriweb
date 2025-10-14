@@ -7,6 +7,8 @@ import {
   CheckCircle, XCircle, Edit, Save, X, Building, Users, Sprout
 } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import Toast from '@/components/ui/Toast';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 interface FarmerDetail {
   id: number;
@@ -76,6 +78,21 @@ export default function FarmerDetailPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [updating, setUpdating] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: 'danger' | 'warning' | 'info';
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     loadFarmer();
@@ -96,45 +113,78 @@ export default function FarmerDetailPage() {
   };
 
   const handleVerificationChange = async (isVerified: boolean) => {
-    if (!confirm(`${isVerified ? 'Xác minh' : 'Hủy xác minh'} nông dân này?`)) return;
-
-    try {
-      setUpdating(true);
-      await apiClient.patch(`/admin/farmers/${farmerId}/verification`, { isVerified });
-      await loadFarmer();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Không thể cập nhật trạng thái xác minh');
-    } finally {
-      setUpdating(false);
-    }
+    setConfirmDialog({
+      open: true,
+      title: isVerified ? 'Xác minh nông dân' : 'Hủy xác minh nông dân',
+      description: `Bạn có chắc chắn muốn ${isVerified ? 'xác minh' : 'hủy xác minh'} nông dân này không?`,
+      variant: isVerified ? 'info' : 'warning',
+      onConfirm: async () => {
+        try {
+          setUpdating(true);
+          await apiClient.patch(`/admin/farmers/${farmerId}/verification`, { isVerified });
+          await loadFarmer();
+          setToastMessage(`Đã ${isVerified ? 'xác minh' : 'hủy xác minh'} nông dân thành công`);
+          setToastType('success');
+          setShowToast(true);
+        } catch (err: any) {
+          setToastMessage(err.response?.data?.message || 'Không thể cập nhật trạng thái xác minh');
+          setToastType('error');
+          setShowToast(true);
+        } finally {
+          setUpdating(false);
+        }
+      },
+    });
   };
 
   const handleVerificationLevelChange = async (level: string) => {
-    if (!confirm(`Thay đổi cấp độ xác minh thành ${level}?`)) return;
-
-    try {
-      setUpdating(true);
-      await apiClient.patch(`/admin/farmers/${farmerId}/verification`, { verificationLevel: level });
-      await loadFarmer();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Không thể cập nhật cấp độ xác minh');
-    } finally {
-      setUpdating(false);
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Thay đổi cấp độ xác minh',
+      description: `Bạn có chắc chắn muốn thay đổi cấp độ xác minh thành ${level} không?`,
+      variant: 'info',
+      onConfirm: async () => {
+        try {
+          setUpdating(true);
+          await apiClient.patch(`/admin/farmers/${farmerId}/verification`, { verificationLevel: level });
+          await loadFarmer();
+          setToastMessage(`Đã cập nhật cấp độ xác minh thành ${level}`);
+          setToastType('success');
+          setShowToast(true);
+        } catch (err: any) {
+          setToastMessage(err.response?.data?.message || 'Không thể cập nhật cấp độ xác minh');
+          setToastType('error');
+          setShowToast(true);
+        } finally {
+          setUpdating(false);
+        }
+      },
+    });
   };
 
   const handleRiskLevelChange = async (riskLevel: string) => {
-    if (!confirm(`Thay đổi mức độ rủi ro thành ${riskLevel}?`)) return;
-
-    try {
-      setUpdating(true);
-      await apiClient.patch(`/admin/farmers/${farmerId}`, { riskLevel });
-      await loadFarmer();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Không thể cập nhật mức độ rủi ro');
-    } finally {
-      setUpdating(false);
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Thay đổi mức độ rủi ro',
+      description: `Bạn có chắc chắn muốn thay đổi mức độ rủi ro thành ${riskLevel} không?`,
+      variant: 'warning',
+      onConfirm: async () => {
+        try {
+          setUpdating(true);
+          await apiClient.patch(`/admin/farmers/${farmerId}`, { riskLevel });
+          await loadFarmer();
+          setToastMessage(`Đã cập nhật mức độ rủi ro thành ${riskLevel}`);
+          setToastType('success');
+          setShowToast(true);
+        } catch (err: any) {
+          setToastMessage(err.response?.data?.message || 'Không thể cập nhật mức độ rủi ro');
+          setToastType('error');
+          setShowToast(true);
+        } finally {
+          setUpdating(false);
+        }
+      },
+    });
   };
 
   if (loading) {
@@ -391,19 +441,19 @@ export default function FarmerDetailPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Thu nhập hàng tháng</label>
                   <div className="text-xl font-bold text-gray-900">
-                    ${farmer.monthlyIncome?.toLocaleString() || '-'}
+                    ₫{farmer.monthlyIncome?.toLocaleString() || '-'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tổng tài sản</label>
                   <div className="text-xl font-bold text-gray-900">
-                    ${farmer.totalAssets?.toLocaleString() || '-'}
+                    ₫{farmer.totalAssets?.toLocaleString() || '-'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tổng nợ phải trả</label>
                   <div className="text-xl font-bold text-gray-900">
-                    ${farmer.totalLiabilities?.toLocaleString() || '-'}
+                    ₫{farmer.totalLiabilities?.toLocaleString() || '-'}
                   </div>
                 </div>
               </div>
@@ -411,11 +461,11 @@ export default function FarmerDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Giá trị thiết bị</label>
-                  <div className="text-gray-900">${farmer.equipmentValue?.toLocaleString() || '-'}</div>
+                  <div className="text-gray-900">₫{farmer.equipmentValue?.toLocaleString() || '-'}</div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Giá trị vật nuôi</label>
-                  <div className="text-gray-900">${farmer.livestockValue?.toLocaleString() || '-'}</div>
+                  <div className="text-gray-900">₫{farmer.livestockValue?.toLocaleString() || '-'}</div>
                 </div>
               </div>
 
@@ -665,11 +715,11 @@ export default function FarmerDetailPage() {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <div className="text-gray-500">Yêu cầu</div>
-                          <div className="font-medium">${investment.requestedAmount.toLocaleString()}</div>
+                          <div className="font-medium">₫{investment.requestedAmount.toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-gray-500">Đã huy động</div>
-                          <div className="font-medium">${investment.currentAmount.toLocaleString()}</div>
+                          <div className="font-medium">₫{investment.currentAmount.toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-gray-500">Loại</div>
@@ -749,6 +799,21 @@ export default function FarmerDetailPage() {
           )}
         </div>
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant={confirmDialog.variant}
+        onConfirm={confirmDialog.onConfirm}
+      />
     </div>
   );
 }

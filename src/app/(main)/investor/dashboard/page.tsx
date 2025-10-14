@@ -87,64 +87,64 @@ export default function InvestorDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 border border-blue-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-semibold uppercase tracking-wide">Tổng đầu tư</p>
-                <p className="text-4xl font-bold mt-3 text-gray-900">
-                  ${(stats?.totalInvested || 0).toLocaleString()}
+          <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">TỔNG ĐẦU TƯ</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">
+                  ₫{(stats?.totalInvested || 0).toLocaleString('vi-VN')}
                 </p>
-                <p className="text-blue-600 text-xs mt-2">Vốn đã rót</p>
+                <p className="text-blue-600 text-sm font-medium">Vốn đã rót</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-400 to-blue-600 p-4 rounded-2xl shadow-lg">
-                <DollarSign className="text-white" size={28} />
+              <div className="bg-blue-500 p-3 rounded-xl shadow-md">
+                <DollarSign className="text-white" size={24} />
               </div>
             </div>
           </div>
 
-          <Link href="/investor/portfolio" className="group bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 border border-green-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-semibold uppercase tracking-wide">Đang đầu tư</p>
-                <p className="text-4xl font-bold mt-3 text-gray-900">{stats?.activeInvestments || 0}</p>
-                <p className="text-green-600 text-xs mt-2 flex items-center gap-1">
+          <Link href="/investor/portfolio" className="group bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">ĐANG ĐẦU TƯ</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{stats?.activeInvestments || 0}</p>
+                <p className="text-green-600 text-sm font-medium flex items-center gap-1">
                   <TrendingUp size={14} />
                   Xem danh mục
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-green-400 to-green-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
-                <PieChart className="text-white" size={28} />
+              <div className="bg-green-500 p-3 rounded-xl shadow-md group-hover:scale-105 transition-transform">
+                <PieChart className="text-white" size={24} />
               </div>
             </div>
           </Link>
 
-          <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 border border-purple-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-semibold uppercase tracking-wide">Lợi nhuận</p>
-                <p className="text-4xl font-bold mt-3 text-gray-900">
-                  ${(stats?.totalReturns || 0).toLocaleString()}
+          <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-100">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">LỢI NHUẬN</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">
+                  ₫{(stats?.totalReturns || 0).toLocaleString('vi-VN')}
                 </p>
-                <p className="text-purple-600 text-xs mt-2">Tổng thu về</p>
+                <p className="text-purple-600 text-sm font-medium">Tổng thu về</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-400 to-purple-600 p-4 rounded-2xl shadow-lg">
-                <TrendingUp className="text-white" size={28} />
+              <div className="bg-purple-500 p-3 rounded-xl shadow-md">
+                <TrendingUp className="text-white" size={24} />
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm font-semibold uppercase tracking-wide">Tỷ suất ROI</p>
-                <p className="text-4xl font-bold mt-3">{(stats?.roi || 0).toFixed(1)}%</p>
-                <p className="text-orange-200 text-xs mt-2 flex items-center gap-1">
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all text-white">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-orange-100 text-xs font-medium uppercase tracking-wide mb-2">TỶ SUẤT ROI</p>
+                <p className="text-3xl font-bold mb-1">{(stats?.roi || 0).toFixed(1)}%</p>
+                <p className="text-orange-200 text-sm font-medium flex items-center gap-1">
                   <Award size={14} />
                   Hiệu quả đầu tư
                 </p>
               </div>
-              <div className="bg-white/20 p-4 rounded-2xl">
-                <Target className="text-white" size={28} />
+              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                <Target className="text-white" size={24} />
               </div>
             </div>
           </div>
@@ -154,32 +154,32 @@ export default function InvestorDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Portfolio Overview - Takes 2 columns */}
           <div className="lg:col-span-2 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                 <BarChart3 className="text-blue-600" size={28} />
                 Tổng quan Danh mục
               </h2>
               <Link
                 href="/investor/portfolio"
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1"
+                className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all"
               >
                 Chi tiết <ArrowRight size={16} />
               </Link>
             </div>
-            <div className="grid grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
-                <p className="text-blue-700 text-sm font-medium mb-2">Giá trị danh mục</p>
-                <p className="text-3xl font-bold text-blue-600">
-                  ${(stats?.portfolioValue || 0).toLocaleString()}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200 hover:shadow-md transition-shadow overflow-hidden">
+                <p className="text-blue-700 text-sm font-semibold mb-3">Giá trị danh mục</p>
+                <p className="text-3xl font-bold text-blue-600 break-words">
+                  ₫{(stats?.portfolioValue || 0).toLocaleString('vi-VN')}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl">
-                <p className="text-green-700 text-sm font-medium mb-2">Đang hoạt động</p>
-                <p className="text-3xl font-bold text-green-600">{stats?.activeInvestments || 0}</p>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200 hover:shadow-md transition-shadow">
+                <p className="text-green-700 text-sm font-semibold mb-3">Đang hoạt động</p>
+                <p className="text-4xl font-bold text-green-600">{stats?.activeInvestments || 0}</p>
               </div>
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl">
-                <p className="text-gray-700 text-sm font-medium mb-2">Đã hoàn thành</p>
-                <p className="text-3xl font-bold text-gray-900">{stats?.completedInvestments || 0}</p>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+                <p className="text-gray-700 text-sm font-semibold mb-3">Đã hoàn thành</p>
+                <p className="text-4xl font-bold text-gray-900">{stats?.completedInvestments || 0}</p>
               </div>
             </div>
           </div>

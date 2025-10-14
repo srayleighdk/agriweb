@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { farmerService, FarmerStats } from '@/lib/api/farmer';
 import { MapPin, Sprout, Beef, DollarSign, TrendingUp, Plus, BarChart3, Calendar, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import FarmerNav from '@/components/layout/FarmerNav';
 
 export default function FarmerDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<FarmerStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,6 +21,11 @@ export default function FarmerDashboard() {
       setLoading(true);
       const data = await farmerService.getStats();
       setStats(data);
+
+      // Redirect to onboarding if no farmlands exist
+      if (data.farmlands === 0) {
+        router.push('/farmer/farmlands/new?onboarding=true');
+      }
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {

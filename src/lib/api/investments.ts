@@ -92,11 +92,48 @@ export interface GetInvestmentsParams {
   search?: string;
 }
 
+export interface GetAvailableInvestmentsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  investmentType?: string;
+  riskLevel?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  minReturn?: number;
+  maxReturn?: number;
+  provinceId?: number;
+  communeId?: number;
+  maxDuration?: number;
+  minFundingProgress?: number;
+  maxFundingProgress?: number;
+  sortBy?: 'createdAt' | 'requestedAmount' | 'expectedReturn' | 'fundingProgress' | 'fundingDeadline';
+  sortOrder?: 'asc' | 'desc';
+  riskFactors?: string[];
+}
+
 class InvestmentsService {
   /**
-   * Get all investments (admin)
+   * Get available investments for browsing/investing
    */
-  async getInvestments(params: GetInvestmentsParams = {}): Promise<PaginatedResponse<Investment>> {
+  async getInvestments(params: GetAvailableInvestmentsParams = {}): Promise<PaginatedResponse<Investment>> {
+    const response = await apiClient.get('/farmer-investments/available', {
+      params,
+    });
+    // The backend returns { data, pagination, filters }, extract just data and pagination
+    return {
+      data: response.data.data,
+      total: response.data.pagination.total,
+      page: response.data.pagination.page,
+      limit: response.data.pagination.limit,
+      totalPages: response.data.pagination.totalPages,
+    };
+  }
+
+  /**
+   * Get all investments (admin only)
+   */
+  async getAllInvestmentsAdmin(params: GetInvestmentsParams = {}): Promise<PaginatedResponse<Investment>> {
     const response = await apiClient.get<PaginatedResponse<Investment>>('/farmer-investments/admin/all', {
       params,
     });
@@ -104,23 +141,36 @@ class InvestmentsService {
   }
 
   /**
-   * Get investment by ID (admin)
+   * Get investment by ID
    */
   async getInvestmentById(id: number): Promise<Investment> {
+    const response = await apiClient.get<Investment>(`/farmer-investments/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Get investment by ID (admin only)
+   */
+  async getInvestmentByIdAdmin(id: number): Promise<Investment> {
     const response = await apiClient.get<Investment>(`/farmer-investments/admin/${id}`);
     return response.data;
   }
 
   /**
-   * Update investment status (approve/reject)
+   * Update investment status (approve/reject) - Admin only
    */
   async updateInvestmentStatus(
     id: number,
-    status: InvestmentStatus
+    status: InvestmentStatus,
+    notes?: string
   ): Promise<Investment> {
-    const response = await apiClient.patch<Investment>(`/farmer-investments/${id}`, {
-      status,
-    });
+    const response = await apiClient.patch<Investment>(
+      `/farmer-investments/admin/${id}/status`,
+      {
+        status,
+        notes,
+      }
+    );
     return response.data;
   }
 

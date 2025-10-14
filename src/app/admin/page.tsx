@@ -87,7 +87,7 @@ export default function AdminDashboard() {
               <p className="text-gray-500 text-sm font-medium">Đầu tư đang hoạt động</p>
               <p className="text-3xl font-bold mt-2">{stats?.investments.active || 0}</p>
               <p className="text-sm text-gray-600 mt-2">
-                ${(stats?.investments.totalFunded || 0).toLocaleString()}
+                ₫{(stats?.investments.totalFunded || 0).toLocaleString()}
               </p>
             </div>
             <div className="bg-green-100 p-3 rounded-full">
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 font-medium">Tổng số tiền</span>
                 <span className="font-bold text-lg">
-                  ${(stats?.investments.totalAmount || 0).toLocaleString()}
+                  ₫{(stats?.investments.totalAmount || 0).toLocaleString()}
                 </span>
               </div>
             </div>

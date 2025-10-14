@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
 import { Sprout, TrendingUp, Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import Toast from '@/components/ui/Toast';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setAuth } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +20,22 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectedUserType, setSelectedUserType] = useState<'farmer' | 'investor' | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+
+  // Check for OAuth errors in URL
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      const errorMessages: Record<string, string> = {
+        'google_auth_failed': 'Đăng nhập Google thất bại. Vui lòng thử lại.',
+        'missing_credentials': 'Thiếu thông tin xác thực. Vui lòng thử lại.',
+        'callback_failed': 'Xử lý đăng nhập thất bại. Vui lòng thử lại.',
+      };
+      setError(errorMessages[errorParam] || decodeURIComponent(errorParam));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +73,9 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    alert('Google login will be implemented soon');
+    // Redirect to backend Google OAuth endpoint
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   return (
@@ -64,8 +84,14 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-green-800 p-12 flex-col justify-between">
         <div>
           <div className="flex items-center gap-3 text-white">
-            <Sprout size={40} />
-            <span className="text-3xl font-bold">AgriWeb</span>
+            <Image 
+              src="/appicon.png" 
+              alt="Nông nghiệp tái sinh Logo" 
+              width={50} 
+              height={50}
+              className="object-contain rounded-lg border-2 border-white/30"
+            />
+            <span className="text-3xl font-bold">Nông nghiệp tái sinh</span>
           </div>
         </div>
         <div className="text-white">
@@ -97,7 +123,7 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="text-green-100 text-sm">
-          © 2025 AgriWeb. Nền tảng đầu tư nông nghiệp Việt Nam.
+          © 2025 Nông nghiệp tái sinh. Nền tảng đầu tư nông nghiệp Việt Nam.
         </div>
       </div>
 
@@ -105,9 +131,15 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
-          <div className="lg:hidden flex items-center justify-center gap-3 text-green-600 mb-8">
-            <Sprout size={32} />
-            <span className="text-2xl font-bold">AgriWeb</span>
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <Image 
+              src="/appicon.png" 
+              alt="Nông nghiệp tái sinh Logo" 
+              width={40} 
+              height={40}
+              className="object-contain rounded-lg border-2 border-gray-300"
+            />
+            <span className="text-2xl font-bold text-gray-900">Nông nghiệp tái sinh</span>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -330,6 +362,13 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }

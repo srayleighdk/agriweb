@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { investmentsService, Investment, InvestorInvestment, InvestmentStatus } from '@/lib/api/investments';
 import { Search, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
+import Toast from '@/components/ui/Toast';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 type InvestmentView = 'farmer' | 'investor';
 
@@ -20,6 +22,21 @@ export default function InvestmentsPage() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const limit = 10;
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: 'danger' | 'warning' | 'info';
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     loadInvestments();
@@ -31,7 +48,7 @@ export default function InvestmentsPage() {
       setError('');
 
       if (viewType === 'farmer') {
-        const response = await investmentsService.getInvestments({
+        const response = await investmentsService.getAllInvestmentsAdmin({
           page,
           limit,
           search: search || undefined,
@@ -76,25 +93,47 @@ export default function InvestmentsPage() {
   };
 
   const handleApprove = async (id: number) => {
-    if (!confirm('Approve this investment request?')) return;
-    
-    try {
-      await investmentsService.updateInvestmentStatus(id, InvestmentStatus.APPROVED);
-      loadInvestments();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to approve investment');
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Phê duyệt yêu cầu đầu tư',
+      description: 'Bạn có chắc chắn muốn phê duyệt yêu cầu đầu tư này không?',
+      variant: 'info',
+      onConfirm: async () => {
+        try {
+          await investmentsService.updateInvestmentStatus(id, InvestmentStatus.APPROVED);
+          await loadInvestments();
+          setToastMessage('Phê duyệt thành công');
+          setToastType('success');
+          setShowToast(true);
+        } catch (err: any) {
+          setToastMessage(err.response?.data?.message || 'Không thể phê duyệt');
+          setToastType('error');
+          setShowToast(true);
+        }
+      },
+    });
   };
 
   const handleReject = async (id: number) => {
-    if (!confirm('Reject this investment request?')) return;
-    
-    try {
-      await investmentsService.updateInvestmentStatus(id, InvestmentStatus.REJECTED);
-      loadInvestments();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to reject investment');
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Từ chối yêu cầu đầu tư',
+      description: 'Bạn có chắc chắn muốn từ chối yêu cầu đầu tư này không? Hành động này không thể hoàn tác.',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await investmentsService.updateInvestmentStatus(id, InvestmentStatus.REJECTED);
+          await loadInvestments();
+          setToastMessage('Đã từ chối yêu cầu đầu tư');
+          setToastType('success');
+          setShowToast(true);
+        } catch (err: any) {
+          setToastMessage(err.response?.data?.message || 'Không thể từ chối');
+          setToastType('error');
+          setShowToast(true);
+        }
+      },
+    });
   };
 
   const getStatusBadge = (status: InvestmentStatus) => {
@@ -257,12 +296,12 @@ export default function InvestmentsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-gray-900">
-                            ${investment.requestedAmount.toLocaleString()}
+                            ₫{investment.requestedAmount.toLocaleString()}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-gray-900">
-                            ${investment.currentAmount.toLocaleString()}
+                            ₫{investment.currentAmount.toLocaleString()}
                           </div>
                           <div className="text-xs text-gray-500">
                             {((investment.currentAmount / investment.requestedAmount) * 100).toFixed(1)}%
@@ -326,7 +365,7 @@ export default function InvestmentsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm font-medium text-gray-900">
-                            ${investment.amount.toLocaleString()}
+                            ₫{investment.amount.toLocaleString()}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -386,6 +425,21 @@ export default function InvestmentsPage() {
           </>
         )}
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant={confirmDialog.variant}
+        onConfirm={confirmDialog.onConfirm}
+      />
     </div>
   );
 }

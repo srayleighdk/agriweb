@@ -67,4 +67,38 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Helper function to get full image URL with authentication token
+export const getImageUrl = (path: string): string => {
+  if (!path) return '';
+
+  let fullUrl = '';
+
+  // If already a full URL, use as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    fullUrl = path;
+  }
+  // If it's a relative URL starting with /api, prepend the base domain
+  else if (path.startsWith('/api')) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    // Remove /api from the base URL if it exists, then add the path
+    const cleanBaseUrl = baseUrl.replace(/\/api$/, '');
+    fullUrl = `${cleanBaseUrl}${path}`;
+  }
+  // Otherwise, assume it's a path that needs full base URL
+  else {
+    fullUrl = `${API_BASE_URL}${path}`;
+  }
+
+  // Add authentication token as query parameter if available
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      const separator = fullUrl.includes('?') ? '&' : '?';
+      fullUrl = `${fullUrl}${separator}token=${encodeURIComponent(token)}`;
+    }
+  }
+
+  return fullUrl;
+};
+
 export default apiClient;

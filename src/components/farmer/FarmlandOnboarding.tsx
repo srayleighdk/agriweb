@@ -15,7 +15,7 @@ export default function FarmlandOnboarding({ onClose, onComplete }: FarmlandOnbo
 
   const steps = [
     {
-      title: 'Chào mừng đến với AgriWeb! 🌾',
+      title: 'Chào mừng đến với Nông nghiệp tái sinh! 🌾',
       description: 'Chúng tôi sẽ giúp bạn thiết lập trang trại của mình trong vài bước đơn giản',
       icon: Sprout,
       image: '🎉',

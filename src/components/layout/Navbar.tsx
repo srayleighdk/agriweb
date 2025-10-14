@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -11,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sprout, Menu, X, User, LogOut, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
@@ -67,8 +68,14 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Sprout className="h-8 w-8 text-green-600" />
-            <span className="text-xl font-bold text-gray-900">AgriWeb</span>
+            <Image 
+              src="/appicon.png" 
+              alt="Nông nghiệp tái sinh Logo" 
+              width={40} 
+              height={40}
+              className="object-contain rounded-lg border-2 border-gray-300"
+            />
+            <span className="text-xl font-bold text-gray-900">Nông nghiệp tái sinh</span>
           </Link>
 
           {/* Desktop Navigation */}

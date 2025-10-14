@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { User, Mail, Phone, MapPin, Shield, Calendar, Save, X } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { Role } from '@/types';
+import Toast from '@/components/ui/Toast';
 
 interface UserDetail {
   id: number;
@@ -33,6 +34,9 @@ export default function UserDetailPage() {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserDetail>>({});
   const [saving, setSaving] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     loadUser();
@@ -59,8 +63,13 @@ export default function UserDetailPage() {
       await apiClient.patch(`/admin/users/${userId}`, formData);
       await loadUser();
       setEditing(false);
+      setToastMessage('User updated successfully');
+      setToastType('success');
+      setShowToast(true);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to update user');
+      setToastMessage(err.response?.data?.message || 'Failed to update user');
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setSaving(false);
     }
@@ -73,7 +82,9 @@ export default function UserDetailPage() {
       await apiClient.delete(`/admin/users/${userId}`);
       router.push('/admin/users');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete user');
+      setToastMessage(err.response?.data?.message || 'Failed to delete user');
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
@@ -364,6 +375,13 @@ export default function UserDetailPage() {
           </div>
         </div>
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }

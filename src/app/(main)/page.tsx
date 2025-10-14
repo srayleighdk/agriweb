@@ -110,7 +110,7 @@ export default function HomePage() {
       <section id="features" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Tại Sao Chọn AgriWeb?</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Tại Sao Chọn Nông nghiệp tái sinh?</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Nền tảng toàn diện được thiết kế để cách mạng hóa đầu tư nông nghiệp và quản lý trang trại
             </p>
@@ -364,7 +364,7 @@ export default function HomePage() {
                 Xây Dựng Tương Lai Nông Nghiệp Bền Vững
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                AgriWeb không chỉ là một nền tảng—đây là một phong trào hướng tới nông nghiệp bền vững,
+                Nông nghiệp tái sinh không chỉ là một nền tảng—đây là một phong trào hướng tới nông nghiệp bền vững,
                 dựa trên công nghệ mang lại lợi ích cho tất cả mọi người tham gia.
               </p>
               <div className="space-y-4">

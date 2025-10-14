@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AgriWeb - Agricultural Investment Platform',
-  description: 'Connecting farmers and investors for sustainable agriculture',
+  title: 'Nông nghiệp tái sinh - Nền tảng Đầu tư Nông nghiệp',
+  description: 'Kết nối nông dân và nhà đầu tư cho nông nghiệp bền vững',
 };
 
 export default function MainLayout({

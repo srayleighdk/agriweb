@@ -34,16 +34,26 @@ export interface FarmerInvestment {
 }
 
 export interface CreateFarmerInvestmentDto {
-  farmlandId: number;
+  farmlandId?: number;
   title: string;
-  description: string;
-  fundingGoal: number;
-  minInvestment: number;
-  maxInvestment: number;
-  expectedReturn: number;
-  returnPeriod: number;
-  startDate: string;
-  endDate: string;
+  description?: string;
+  investmentType: string;
+  requestedAmount: number;
+  targetDate?: string;
+  duration?: number;
+  expectedReturn?: number;
+  minimumInvestment?: number;
+  maximumInvestment?: number;
+  repaymentTerms?: string;
+  riskLevel?: string;
+  riskFactors?: string[];
+  collateral?: string;
+  insurance?: string;
+  fundingDeadline?: string;
+  images?: string[];
+  documents?: string[];
+  businessPlan?: string;
+  financialProjection?: string;
 }
 
 export interface UpdateFarmerInvestmentDto {
@@ -69,8 +79,8 @@ export interface InvestmentStats {
 }
 
 class FarmerInvestmentsService {
-  async getMyInvestments(params?: { page?: number; limit?: number; status?: InvestmentStatus }): Promise<PaginatedResponse<FarmerInvestment>> {
-    const response = await apiClient.get<PaginatedResponse<FarmerInvestment>>('/farmer-investments', { params });
+  async getMyInvestments(params?: { page?: number; limit?: number; status?: InvestmentStatus }): Promise<FarmerInvestment[]> {
+    const response = await apiClient.get<FarmerInvestment[]>('/farmer-investments', { params });
     return response.data;
   }
 

@@ -29,7 +29,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">
               <Sprout className="h-8 w-8 text-green-500" />
-              <span className="text-xl font-bold text-white">{contactInfo?.companyName || 'AgriWeb'}</span>
+              <span className="text-xl font-bold text-white">{contactInfo?.companyName || 'Nông nghiệp tái sinh'}</span>
             </Link>
             <p className="text-sm">
               {contactInfo?.description || 'Kết nối nông dân và nhà đầu tư vì nông nghiệp bền vững và thịnh vượng chung.'}
@@ -156,7 +156,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
-          <p>&copy; {new Date().getFullYear()} AgriWeb. Bảo lưu mọi quyền.</p>
+          <p>&copy; {new Date().getFullYear()} Nông nghiệp tái sinh. Bảo lưu mọi quyền.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="#" className="hover:text-green-500 transition">
               Chính Sách Bảo Mật

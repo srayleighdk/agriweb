@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { investmentsService, InvestorInvestment, InvestmentStatus } from '@/lib/api/investments';
 import apiClient from '@/lib/api/client';
+import Toast from '@/components/ui/Toast';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 export default function InvestorInvestmentDetailPage() {
   const params = useParams();
@@ -17,6 +19,24 @@ export default function InvestorInvestmentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: 'danger' | 'warning' | 'info';
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     loadInvestment();
@@ -37,33 +57,52 @@ export default function InvestorInvestmentDetailPage() {
   };
 
   const handleApprove = async () => {
-    if (!confirm('Bạn có chắc chắn muốn phê duyệt đầu tư này?')) return;
-
-    try {
-      setProcessing(true);
-      await apiClient.patch(`/admin/investor-investments/${investmentId}/approve`);
-      alert('Đã phê duyệt đầu tư thành công!');
-      await loadInvestment();
-    } catch (err: any) {
-      console.error('Failed to approve:', err);
-      alert(err.response?.data?.message || 'Không thể phê duyệt đầu tư');
-    } finally {
-      setProcessing(false);
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Phê duyệt đầu tư',
+      description: 'Bạn có chắc chắn muốn phê duyệt đầu tư này không? Nhà đầu tư sẽ được thông báo về quyết định này.',
+      variant: 'info',
+      onConfirm: async () => {
+        try {
+          setProcessing(true);
+          await apiClient.patch(`/admin/investor-investments/${investmentId}/approve`);
+          setToastMessage('Đã phê duyệt đầu tư thành công!');
+          setToastType('success');
+          setShowToast(true);
+          await loadInvestment();
+        } catch (err: any) {
+          console.error('Failed to approve:', err);
+          setToastMessage(err.response?.data?.message || 'Không thể phê duyệt đầu tư');
+          setToastType('error');
+          setShowToast(true);
+        } finally {
+          setProcessing(false);
+        }
+      },
+    });
   };
 
-  const handleReject = async () => {
-    const reason = prompt('Nhập lý do từ chối (tùy chọn):');
-    if (reason === null) return; // User cancelled
+  const handleRejectClick = () => {
+    setShowRejectModal(true);
+    setRejectReason('');
+  };
 
+  const handleRejectConfirm = async () => {
     try {
       setProcessing(true);
-      await apiClient.patch(`/admin/investor-investments/${investmentId}/reject`, { reason });
-      alert('Đã từ chối đầu tư');
+      await apiClient.patch(`/admin/investor-investments/${investmentId}/reject`, {
+        reason: rejectReason || undefined
+      });
+      setToastMessage('Đã từ chối đầu tư');
+      setToastType('success');
+      setShowToast(true);
+      setShowRejectModal(false);
       await loadInvestment();
     } catch (err: any) {
       console.error('Failed to reject:', err);
-      alert(err.response?.data?.message || 'Không thể từ chối đầu tư');
+      setToastMessage(err.response?.data?.message || 'Không thể từ chối đầu tư');
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setProcessing(false);
     }
@@ -147,7 +186,7 @@ export default function InvestorInvestmentDetailPage() {
                 Phê duyệt
               </button>
               <button
-                onClick={handleReject}
+                onClick={handleRejectClick}
                 disabled={processing}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
@@ -171,7 +210,7 @@ export default function InvestorInvestmentDetailPage() {
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Số tiền đầu tư</div>
-          <div className="text-xl font-bold mt-1">${investment.amount.toLocaleString()}</div>
+          <div className="text-xl font-bold mt-1">₫{investment.amount.toLocaleString()}</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Lợi nhuận kỳ vọng</div>
@@ -218,7 +257,7 @@ export default function InvestorInvestmentDetailPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Yêu cầu vốn</label>
                     <div className="text-gray-900">
-                      ${investment.farmerInvestment.requestedAmount.toLocaleString()}
+                      ₫{investment.farmerInvestment.requestedAmount.toLocaleString()}
                     </div>
                   </div>
                   <div>
@@ -243,7 +282,7 @@ export default function InvestorInvestmentDetailPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Số tiền đầu tư</label>
-                <div className="text-gray-900">${investment.amount.toLocaleString()}</div>
+                <div className="text-gray-900">₫{investment.amount.toLocaleString()}</div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Ngày đầu tư</label>
@@ -390,6 +429,95 @@ export default function InvestorInvestmentDetailPage() {
           </div>
         </div>
       </div>
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-3 rounded-xl">
+                  <XCircle size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Từ chối Đầu tư</h3>
+                  <p className="text-red-100 text-sm mt-1">Xác nhận từ chối đầu tư này</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Lý do từ chối (tùy chọn)
+                </label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Nhập lý do từ chối đầu tư này..."
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Lý do này sẽ được gửi đến nhà đầu tư
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectModal(false)}
+                  disabled={processing}
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRejectConfirm}
+                  disabled={processing}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={18} />
+                      Xác nhận Từ chối
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) =>
+          setConfirmDialog((prev) => ({ ...prev, open }))
+        }
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        variant={confirmDialog.variant}
+        onConfirm={confirmDialog.onConfirm}
+      />
+
+      {/* Toast Notification */}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }

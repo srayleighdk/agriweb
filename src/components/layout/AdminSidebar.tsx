@@ -38,7 +38,7 @@ export function AdminSidebar() {
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col">
       <div className="p-6">
-        <h1 className="text-2xl font-bold">AgriWeb CMS</h1>
+        <h1 className="text-2xl font-bold">Nông nghiệp tái sinh CMS</h1>
       </div>
       <nav className="flex-1 px-4 space-y-1">
         {menuItems.map((item) => {

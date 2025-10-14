@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react';
 import { notificationsService, Notification } from '@/lib/api/notifications';
 import { Bell, Plus, Trash2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import Toast from '@/components/ui/Toast';
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     loadNotifications();
@@ -36,7 +40,9 @@ export default function NotificationsPage() {
       await notificationsService.deleteNotification(id);
       loadNotifications();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete notification');
+      setToastMessage(err.response?.data?.message || 'Failed to delete notification');
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
@@ -125,6 +131,13 @@ export default function NotificationsPage() {
           </div>
         )}
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 }

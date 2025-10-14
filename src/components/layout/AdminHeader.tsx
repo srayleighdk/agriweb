@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Bell, User, LogOut, X, CheckCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
@@ -123,9 +125,19 @@ export function AdminHeader() {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800">Admin Panel</h2>
-        </div>
+        <Link href="/admin" className="flex items-center space-x-3">
+          <Image 
+            src="/appicon.png" 
+            alt="Nông nghiệp tái sinh Logo" 
+            width={40} 
+            height={40}
+            className="object-contain rounded-lg border-2 border-gray-300"
+          />
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">Nông nghiệp tái sinh</h2>
+            <p className="text-xs text-gray-500">Quản Trị</p>
+          </div>
+        </Link>
         <div className="flex items-center gap-4">
           <div className="relative" ref={dropdownRef}>
             <button

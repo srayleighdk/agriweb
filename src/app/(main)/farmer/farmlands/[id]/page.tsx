@@ -6,6 +6,7 @@ import { farmlandsService, Farmland } from '@/lib/api/farmlands';
 import FarmerNav from '@/components/layout/FarmerNav';
 import AddCropModal from '@/components/farmer/AddCropModal';
 import AddLivestockModal from '@/components/farmer/AddLivestockModal';
+import Toast from '@/components/ui/Toast';
 import {
   MapPin, ArrowLeft, Edit, Trash2, Sprout, Beef,
   Droplet, Zap, Calendar, Gauge, Map, Plus
@@ -35,6 +36,9 @@ export default function FarmlandDetailPage() {
   const [error, setError] = useState('');
   const [showAddCropModal, setShowAddCropModal] = useState(false);
   const [showAddLivestockModal, setShowAddLivestockModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   // Parse coordinates if available
   const coordinates = farmland?.coordinates
@@ -67,10 +71,18 @@ export default function FarmlandDetailPage() {
 
     try {
       await farmlandsService.deleteFarmland(farmlandId);
-      alert('✅ Đã xóa đất canh tác thành công!');
-      router.push('/farmer/farmlands');
+      setToastMessage('Đã xóa đất canh tác thành công!');
+      setToastType('success');
+      setShowToast(true);
+
+      // Navigate after brief delay
+      setTimeout(() => {
+        router.push('/farmer/farmlands');
+      }, 1500);
     } catch (err: any) {
-      alert('❌ ' + (err.response?.data?.message || 'Xóa thất bại'));
+      setToastMessage(err.response?.data?.message || 'Xóa thất bại');
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
@@ -370,14 +382,14 @@ export default function FarmlandDetailPage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Hành động</h2>
                 <div className="space-y-3">
                   <Link
-                    href={`/farmer/farmlands/${farmlandId}/crops`}
+                    href="/farmer/crops"
                     className="w-full px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 font-semibold transition-all flex items-center justify-center gap-2"
                   >
                     <Sprout size={18} />
                     Quản lý cây trồng
                   </Link>
                   <Link
-                    href={`/farmer/farmlands/${farmlandId}/livestock`}
+                    href="/farmer/livestock"
                     className="w-full px-4 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 font-semibold transition-all flex items-center justify-center gap-2"
                   >
                     <Beef size={18} />
@@ -389,6 +401,13 @@ export default function FarmlandDetailPage() {
           </div>
         </div>
       </div>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </>
   );
 }
