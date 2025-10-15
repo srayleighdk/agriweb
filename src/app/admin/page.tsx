@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { statsService, DashboardStats } from '@/lib/api/stats';
-import { Users, DollarSign, MapPin, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, DollarSign, MapPin, Clock, AlertCircle } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -19,9 +19,10 @@ export default function AdminDashboard() {
       setError('');
       const data = await statsService.getDashboardStats();
       setStats(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load stats:', err);
-      setError(err.response?.data?.message || 'Failed to load dashboard statistics');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load dashboard statistics');
     } finally {
       setLoading(false);
     }

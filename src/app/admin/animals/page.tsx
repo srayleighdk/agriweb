@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { animalsService, AnimalSpecies } from '@/lib/api/animals';
 import { Search, Plus, Edit, Trash2, Beef } from 'lucide-react';
 import Link from 'next/link';
@@ -15,11 +15,7 @@ export default function AnimalsPage() {
   const [totalPages, setTotalPages] = useState(0);
   const limit = 10;
 
-  useEffect(() => {
-    loadAnimals();
-  }, [page, search]);
-
-  const loadAnimals = async () => {
+  const loadAnimals = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -31,14 +27,19 @@ export default function AnimalsPage() {
       setAnimals(response.data || []);
       setTotal(response.total || 0);
       setTotalPages(response.totalPages || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load animals:', err);
-      setError(err.response?.data?.message || 'Failed to load animals');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load animals');
       setAnimals([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, limit]);
+
+  useEffect(() => {
+    loadAnimals();
+  }, [loadAnimals]);
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Delete animal "${name}"?`)) return;
@@ -46,8 +47,9 @@ export default function AnimalsPage() {
     try {
       await animalsService.deleteAnimal(id);
       loadAnimals();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete animal');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Failed to delete animal');
     }
   };
 

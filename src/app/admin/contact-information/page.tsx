@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { contactInformationService, ContactInformation, UpdateContactInformationDto } from '@/lib/api/contact-information';
+import { contactInformationService, UpdateContactInformationDto } from '@/lib/api/contact-information';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -53,8 +53,9 @@ export default function ContactInformationPage() {
         workingHours: data.workingHours || '',
         description: data.description || '',
       });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Không thể tải thông tin liên hệ');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin liên hệ');
     } finally {
       setLoading(false);
     }
@@ -70,8 +71,9 @@ export default function ContactInformationPage() {
       await contactInformationService.update(formData);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Cập nhật thất bại');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Cập nhật thất bại');
     } finally {
       setSaving(false);
     }

@@ -49,6 +49,7 @@ export default function FarmlandDetailPage() {
 
   useEffect(() => {
     loadFarmland();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [farmlandId]);
 
   const loadFarmland = async () => {
@@ -57,9 +58,10 @@ export default function FarmlandDetailPage() {
       setError('');
       const data = await farmlandsService.getFarmlandById(farmlandId);
       setFarmland(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load farmland:', err);
-      setError(err.response?.data?.message || 'Không thể tải thông tin đất canh tác');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin đất canh tác');
     } finally {
       setLoading(false);
     }
@@ -79,8 +81,9 @@ export default function FarmlandDetailPage() {
       setTimeout(() => {
         router.push('/farmer/farmlands');
       }, 1500);
-    } catch (err: any) {
-      setToastMessage(err.response?.data?.message || 'Xóa thất bại');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Xóa thất bại');
       setToastType('error');
       setShowToast(true);
     }

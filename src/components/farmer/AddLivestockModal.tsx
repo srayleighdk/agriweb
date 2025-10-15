@@ -76,9 +76,10 @@ export default function AddLivestockModal({ farmlandId, onClose, onSuccess }: Ad
         setToastType('success');
         setShowToast(true);
       }, 100);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create livestock:', error);
-      setToastMessage(error.response?.data?.message || 'Thêm vật nuôi thất bại');
+      const err = error as { response?: { data?: { message?: string } } };
+      setToastMessage(err.response?.data?.message || 'Thêm vật nuôi thất bại');
       setToastType('error');
       setShowToast(true);
     } finally {

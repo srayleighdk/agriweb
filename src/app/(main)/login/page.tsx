@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,7 +10,7 @@ import { Role } from '@/types';
 import { Sprout, TrendingUp, Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setAuth } = useAuthStore();
@@ -21,8 +21,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedUserType, setSelectedUserType] = useState<'farmer' | 'investor' | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [toastMessage] = useState('');
+  const [toastType] = useState<'success' | 'error'>('success');
 
   // Check for OAuth errors in URL
   useEffect(() => {
@@ -65,8 +65,9 @@ export default function LoginPage() {
           router.push('/investor/dashboard');
         }
       }, 500);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -370,5 +371,13 @@ export default function LoginPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

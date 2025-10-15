@@ -71,9 +71,10 @@ export default function AddLivestockDiaryModal({ livestockId, onClose, onSuccess
 
       onClose();
       onSuccess('Thêm nhật ký thành công!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create diary entry:', error);
-      const errorMessage = error.response?.data?.message || 'Thêm nhật ký thất bại';
+      const err = error as { response?: { data?: { message?: string } } };
+      const errorMessage = err.response?.data?.message || 'Thêm nhật ký thất bại';
       onError(errorMessage);
     } finally {
       setLoading(false);

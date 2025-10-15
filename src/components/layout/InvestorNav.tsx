@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LayoutDashboard, Search, PieChart, User, LogOut, Menu, X, Bell, Home } from 'lucide-react';
+import { LayoutDashboard, Search, PieChart, User, LogOut, Menu, X, Home } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import NotificationDropdown from '@/components/notifications/NotificationDropdown';
@@ -105,9 +105,9 @@ export default function InvestorNav() {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={user?.avatar || undefined} alt={user?.name} />
+                    <AvatarImage src={user?.avatar || undefined} alt={user?.name || undefined} />
                     <AvatarFallback className="bg-blue-600 text-white">
-                      {getInitials(user?.name)}
+                      {getInitials(user?.name || undefined)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left">

@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, X, Check, AlertCircle, TrendingUp, CheckCircle, Info } from 'lucide-react';
+import { Bell, X, Check, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { notificationsService, Notification } from '@/lib/api/notifications';
 import Link from 'next/link';
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -80,19 +79,6 @@ export default function NotificationDropdown() {
     return <Info className="text-blue-500" size={20} />;
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'URGENT':
-        return 'bg-red-50 border-red-200';
-      case 'HIGH':
-        return 'bg-orange-50 border-orange-200';
-      case 'MEDIUM':
-        return 'bg-yellow-50 border-yellow-200';
-      default:
-        return 'bg-blue-50 border-blue-200';
-    }
-  };
-
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -157,12 +143,7 @@ export default function NotificationDropdown() {
 
             {/* Notifications List */}
             <div className="overflow-y-auto flex-1">
-              {loading ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="text-sm text-gray-500 mt-2">Đang tải...</p>
-                </div>
-              ) : notifications.length === 0 ? (
+              {notifications.length === 0 ? (
                 <div className="p-8 text-center">
                   <Bell className="mx-auto text-gray-300 mb-3" size={48} />
                   <p className="text-gray-500 text-sm">Chưa có thông báo</p>
@@ -190,7 +171,6 @@ export default function NotificationDropdown() {
                             <NotificationItem
                               notification={notification}
                               getNotificationIcon={getNotificationIcon}
-                              getPriorityColor={getPriorityColor}
                               formatTime={formatTime}
                               onDelete={handleDeleteNotification}
                               onMarkAsRead={handleMarkAsRead}
@@ -200,7 +180,6 @@ export default function NotificationDropdown() {
                           <NotificationItem
                             notification={notification}
                             getNotificationIcon={getNotificationIcon}
-                            getPriorityColor={getPriorityColor}
                             formatTime={formatTime}
                             onDelete={handleDeleteNotification}
                             onMarkAsRead={handleMarkAsRead}
@@ -242,14 +221,12 @@ export default function NotificationDropdown() {
 function NotificationItem({
   notification,
   getNotificationIcon,
-  getPriorityColor,
   formatTime,
   onDelete,
   onMarkAsRead,
 }: {
   notification: Notification;
-  getNotificationIcon: (type: string, priority: string) => JSX.Element;
-  getPriorityColor: (priority: string) => string;
+  getNotificationIcon: (type: string, priority: string) => React.ReactElement;
   formatTime: (dateString: string) => string;
   onDelete: (id: number, e: React.MouseEvent) => void;
   onMarkAsRead: (id: number) => void;

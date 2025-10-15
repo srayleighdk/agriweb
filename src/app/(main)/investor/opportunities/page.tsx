@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { investmentsService, Investment } from '@/lib/api/investments';
 import { investorService } from '@/lib/api/investor';
-import { Search, DollarSign, TrendingUp, MapPin, Calendar, Filter, ArrowUpRight, Leaf, TrendingDown, Target, X } from 'lucide-react';
+import { Search, TrendingUp, MapPin, Calendar, Filter, Leaf, X } from 'lucide-react';
 import InvestorNav from '@/components/layout/InvestorNav';
 import Link from 'next/link';
 import Toast from '@/components/ui/Toast';
@@ -29,11 +29,7 @@ export default function OpportunitiesPage() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
-  useEffect(() => {
-    loadOpportunities();
-  }, [search]);
-
-  const loadOpportunities = async () => {
+  const loadOpportunities = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -42,14 +38,19 @@ export default function OpportunitiesPage() {
         search: search || undefined,
       });
       setInvestments(response.data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load opportunities:', err);
-      setError(err.response?.data?.message || 'Failed to load opportunities');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load opportunities');
       setInvestments([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
+
+  useEffect(() => {
+    loadOpportunities();
+  }, [loadOpportunities]);
 
   const getFundingProgress = (current: number, requested: number) => {
     return Math.round((current / requested) * 100);
@@ -135,9 +136,10 @@ export default function OpportunitiesPage() {
       setToastType('success');
       setShowToast(true);
       loadOpportunities();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create investment:', err);
-      setSubmitError(err.response?.data?.message || 'Không thể tạo đầu tư. Vui lòng thử lại.');
+      const error = err as { response?: { data?: { message?: string } } };
+      setSubmitError(error.response?.data?.message || 'Không thể tạo đầu tư. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }

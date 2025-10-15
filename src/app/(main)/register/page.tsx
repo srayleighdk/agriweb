@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/api/auth';
+import { Role } from '@/types';
 import { Sprout, TrendingUp, Shield, Mail, Lock, Eye, EyeOff, User, Phone } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
 
@@ -64,7 +65,7 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
-        role: selectedUserType === 'farmer' ? 'FARMER' : 'INVESTOR',
+        role: selectedUserType === 'farmer' ? Role.FARMER : Role.INVESTOR,
       });
 
       // Show success toast
@@ -76,8 +77,9 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push('/login?registered=true');
       }, 2000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

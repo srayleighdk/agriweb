@@ -31,6 +31,7 @@ export interface LivestockBreed {
     id: number;
     speciesName: string;
     vietnameseName: string;
+    scientificName?: string | null;
   };
 }
 

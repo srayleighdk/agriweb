@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  DollarSign, TrendingUp, Calendar, User, FileText, ArrowLeft, Users, Target, CheckCircle, XCircle
+  Calendar, FileText, ArrowLeft, Users, Target, CheckCircle, XCircle
 } from 'lucide-react';
 import { investmentsService, InvestorInvestment, InvestmentStatus } from '@/lib/api/investments';
 import apiClient from '@/lib/api/client';
@@ -24,7 +24,6 @@ export default function InvestorInvestmentDetailPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [showApproveModal, setShowApproveModal] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -40,6 +39,7 @@ export default function InvestorInvestmentDetailPage() {
 
   useEffect(() => {
     loadInvestment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [investmentId]);
 
   const loadInvestment = async () => {
@@ -48,9 +48,10 @@ export default function InvestorInvestmentDetailPage() {
       setError('');
       const data = await investmentsService.getInvestorInvestmentById(parseInt(investmentId));
       setInvestment(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load investment:', err);
-      setError(err.response?.data?.message || 'Không thể tải thông tin đầu tư');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin đầu tư');
     } finally {
       setLoading(false);
     }
@@ -70,9 +71,10 @@ export default function InvestorInvestmentDetailPage() {
           setToastType('success');
           setShowToast(true);
           await loadInvestment();
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('Failed to approve:', err);
-          setToastMessage(err.response?.data?.message || 'Không thể phê duyệt đầu tư');
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể phê duyệt đầu tư');
           setToastType('error');
           setShowToast(true);
         } finally {
@@ -98,9 +100,10 @@ export default function InvestorInvestmentDetailPage() {
       setShowToast(true);
       setShowRejectModal(false);
       await loadInvestment();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to reject:', err);
-      setToastMessage(err.response?.data?.message || 'Không thể từ chối đầu tư');
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Không thể từ chối đầu tư');
       setToastType('error');
       setShowToast(true);
     } finally {

@@ -9,7 +9,7 @@ export interface Notification {
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   isRead: boolean;
   actionUrl: string | null;
-  data: any;
+  data: Record<string, unknown> | null;
   imageUrl: string | null;
   readAt: string | null;
   createdAt: string;

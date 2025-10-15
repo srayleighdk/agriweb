@@ -2,37 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { investorService } from '@/lib/api/investor';
-import { TrendingUp, TrendingDown, Clock, CheckCircle, DollarSign, BarChart3, PieChart, ArrowUpRight, Calendar, Target, XCircle, AlertCircle } from 'lucide-react';
+import { InvestorInvestment } from '@/lib/api/investments';
+import { TrendingUp, Clock, CheckCircle, DollarSign, PieChart, ArrowUpRight, AlertCircle } from 'lucide-react';
 import InvestorNav from '@/components/layout/InvestorNav';
 import Link from 'next/link';
 
-interface Investment {
-  id: number;
-  farmerInvestmentId: number;
-  amount: number;
-  investmentDate: string;
-  expectedReturn: number | null;
-  actualReturn: number | null;
-  status: string;
-  returnDate: string | null;
-  actualReturnDate: string | null;
-  roi: number | null;
-  isSuccessful: boolean | null;
-  notes?: string | null;
-  farmerInvestment?: {
-    title: string;
-    description: string | null;
-    riskLevel: string;
-    farmer: {
-      user: {
-        name: string | null;
-      };
-    };
-  };
-}
-
 export default function PortfolioPage() {
-  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [investments, setInvestments] = useState<InvestorInvestment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'active' | 'completed' | 'rejected'>('all');
@@ -48,9 +24,10 @@ export default function PortfolioPage() {
       const data = await investorService.getPortfolio();
       // Ensure data is always an array
       setInvestments(Array.isArray(data) ? data : []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load portfolio:', err);
-      setError(err.response?.data?.message || 'Failed to load portfolio');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load portfolio');
       setInvestments([]);
     } finally {
       setLoading(false);
@@ -97,7 +74,7 @@ export default function PortfolioPage() {
     return colors[risk as keyof typeof colors] || 'text-gray-600 bg-gray-50 border-gray-200';
   };
 
-  const getRejectionReason = (investment: Investment): string => {
+  const getRejectionReason = (investment: InvestorInvestment): string => {
     if (!investment.notes) return '';
     // Extract reason from notes if it starts with "Từ chối: "
     if (investment.notes.startsWith('Từ chối: ')) {

@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { InvestorInvestment } from './investments';
 
 export interface InvestorProfile {
   id: number;
@@ -43,19 +44,19 @@ class InvestorService {
     const portfolioData = await this.getPortfolioSummary();
 
     return {
-      totalInvested: portfolioData.totalInvested || 0,
-      activeInvestments: portfolioData.activeInvestments || 0,
-      completedInvestments: portfolioData.completedInvestments || 0,
-      totalReturns: portfolioData.totalReturned || 0,
-      roi: portfolioData.averageROI || 0,
-      portfolioValue: portfolioData.portfolioValue || 0,
+      totalInvested: (portfolioData.totalInvested as number) || 0,
+      activeInvestments: (portfolioData.activeInvestments as number) || 0,
+      completedInvestments: (portfolioData.completedInvestments as number) || 0,
+      totalReturns: (portfolioData.totalReturned as number) || 0,
+      roi: (portfolioData.averageROI as number) || 0,
+      portfolioValue: (portfolioData.portfolioValue as number) || 0,
     };
   }
 
   /**
    * Get investor portfolio (list of investments)
    */
-  async getPortfolio(): Promise<any[]> {
+  async getPortfolio(): Promise<InvestorInvestment[]> {
     const response = await apiClient.get('/investor-investments');
     return response.data;
   }
@@ -63,7 +64,7 @@ class InvestorService {
   /**
    * Get portfolio summary statistics
    */
-  async getPortfolioSummary(): Promise<any> {
+  async getPortfolioSummary(): Promise<Record<string, unknown>> {
     const response = await apiClient.get('/investor-investments/portfolio');
     return response.data;
   }
@@ -71,7 +72,7 @@ class InvestorService {
   /**
    * Update investor profile
    */
-  async updateProfile(data: any): Promise<InvestorProfile> {
+  async updateProfile(data: Partial<InvestorProfile>): Promise<InvestorProfile> {
     const response = await apiClient.put<InvestorProfile>('/auth/profile/investor', data);
     return response.data;
   }
@@ -86,7 +87,7 @@ class InvestorService {
     returnDate?: string;
     notes?: string;
     contractDocument?: string;
-  }): Promise<any> {
+  }): Promise<Record<string, unknown>> {
     const response = await apiClient.post('/investor-investments', data);
     return response.data;
   }

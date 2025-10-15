@@ -47,6 +47,7 @@ export default function InvestorsPage() {
 
   useEffect(() => {
     loadInvestors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, typeFilter, riskFilter, verifiedFilter]);
 
   const loadInvestors = async () => {
@@ -54,7 +55,7 @@ export default function InvestorsPage() {
       setLoading(true);
       setError('');
 
-      const params: any = {
+      const params: Record<string, unknown> = {
         page,
         limit,
       };
@@ -68,9 +69,10 @@ export default function InvestorsPage() {
       setInvestors(response.data.data || []);
       setTotal(response.data.total || 0);
       setTotalPages(response.data.totalPages || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load investors:', err);
-      setError(err.response?.data?.message || 'Failed to load investors');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load investors');
       setInvestors([]);
     } finally {
       setLoading(false);

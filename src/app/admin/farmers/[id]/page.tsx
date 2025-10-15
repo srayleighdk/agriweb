@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  User, MapPin, DollarSign, TrendingUp, Award, Shield, FileText,
-  CheckCircle, XCircle, Edit, Save, X, Building, Users, Sprout
+  User, MapPin, DollarSign, TrendingUp, Award, Shield,
+  CheckCircle, XCircle
 } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import Toast from '@/components/ui/Toast';
@@ -49,7 +49,7 @@ interface FarmerDetail {
   marketRisk: string[];
   equipmentValue: number | null;
   livestockValue: number | null;
-  seasonalIncome: any;
+  seasonalIncome: Record<string, unknown>;
   createdAt: string;
   user: {
     id: number;
@@ -62,8 +62,29 @@ interface FarmerDetail {
     isEmailVerified: boolean;
     isPhoneVerified: boolean;
   };
-  farmlands: any[];
-  investmentRequests: any[];
+  farmlands: Array<{
+    id: number;
+    name: string;
+    farmlandType: string;
+    size: number;
+    soilType?: string;
+    address?: string;
+    irrigationAccess?: boolean;
+    electricityAccess?: boolean;
+    organicCertified?: boolean;
+  }>;
+  investmentRequests: Array<{
+    id: number;
+    title: string;
+    description?: string | null;
+    status: string;
+    investmentType: string;
+    requestedAmount: number;
+    currentAmount: number;
+    riskLevel: string;
+    approvedAmount?: number;
+    createdAt: string;
+  }>;
 }
 
 type TabType = 'personal' | 'financial' | 'verification' | 'farmlands' | 'investments' | 'performance';
@@ -94,23 +115,24 @@ export default function FarmerDetailPage() {
     onConfirm: () => {},
   });
 
-  useEffect(() => {
-    loadFarmer();
-  }, [farmerId]);
-
-  const loadFarmer = async () => {
+  const loadFarmer = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       const response = await apiClient.get(`/admin/farmers/${farmerId}`);
       setFarmer(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load farmer:', err);
-      setError(err.response?.data?.message || 'Failed to load farmer details');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load farmer details');
     } finally {
       setLoading(false);
     }
-  };
+  }, [farmerId]);
+
+  useEffect(() => {
+    loadFarmer();
+  }, [loadFarmer]);
 
   const handleVerificationChange = async (isVerified: boolean) => {
     setConfirmDialog({
@@ -126,8 +148,9 @@ export default function FarmerDetailPage() {
           setToastMessage(`Đã ${isVerified ? 'xác minh' : 'hủy xác minh'} nông dân thành công`);
           setToastType('success');
           setShowToast(true);
-        } catch (err: any) {
-          setToastMessage(err.response?.data?.message || 'Không thể cập nhật trạng thái xác minh');
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể cập nhật trạng thái xác minh');
           setToastType('error');
           setShowToast(true);
         } finally {
@@ -151,8 +174,9 @@ export default function FarmerDetailPage() {
           setToastMessage(`Đã cập nhật cấp độ xác minh thành ${level}`);
           setToastType('success');
           setShowToast(true);
-        } catch (err: any) {
-          setToastMessage(err.response?.data?.message || 'Không thể cập nhật cấp độ xác minh');
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể cập nhật cấp độ xác minh');
           setToastType('error');
           setShowToast(true);
         } finally {
@@ -176,8 +200,9 @@ export default function FarmerDetailPage() {
           setToastMessage(`Đã cập nhật mức độ rủi ro thành ${riskLevel}`);
           setToastType('success');
           setShowToast(true);
-        } catch (err: any) {
-          setToastMessage(err.response?.data?.message || 'Không thể cập nhật mức độ rủi ro');
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể cập nhật mức độ rủi ro');
           setToastType('error');
           setShowToast(true);
         } finally {
@@ -651,7 +676,7 @@ export default function FarmerDetailPage() {
                 <div className="text-center py-8 text-gray-500">Chưa đăng ký vùng đất nào</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {farmer.farmlands.map((farmland: any) => (
+                  {farmer.farmlands.map((farmland) => (
                     <div key={farmland.id} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-gray-900">{farmland.name}</h4>
@@ -692,7 +717,7 @@ export default function FarmerDetailPage() {
                 <div className="text-center py-8 text-gray-500">Chưa có yêu cầu đầu tư</div>
               ) : (
                 <div className="space-y-4">
-                  {farmer.investmentRequests.map((investment: any) => (
+                  {farmer.investmentRequests.map((investment) => (
                     <div key={investment.id} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-gray-900">{investment.title}</h4>

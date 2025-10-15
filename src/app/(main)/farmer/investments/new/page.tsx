@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
 import { farmlandsService, Farmland } from '@/lib/api/farmlands';
@@ -14,13 +15,10 @@ import {
   DollarSign,
   Calendar,
   TrendingUp,
-  MapPin,
-  FileText,
   AlertCircle,
   Info,
   Upload,
   X,
-  Image as ImageIcon,
 } from 'lucide-react';
 
 export default function NewInvestmentPage() {
@@ -54,8 +52,7 @@ export default function NewInvestmentPage() {
 
   const [newRiskFactor, setNewRiskFactor] = useState('');
   const [collateralImages, setCollateralImages] = useState<File[]>([]);
-  const [collateralImageUrls, setCollateralImageUrls] = useState<string[]>([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingImages] = useState(false);
 
   useEffect(() => {
     loadFarmlands();
@@ -168,7 +165,6 @@ export default function NewInvestmentPage() {
 
     const newFiles = Array.from(files);
     const validFiles: File[] = [];
-    let hasError = false;
 
     newFiles.forEach(file => {
       // Check file type
@@ -176,7 +172,6 @@ export default function NewInvestmentPage() {
         setToastMessage('Chỉ chấp nhận file hình ảnh');
         setToastType('error');
         setShowToast(true);
-        hasError = true;
         return;
       }
       // Check file size (max 2MB to match backend)
@@ -184,7 +179,6 @@ export default function NewInvestmentPage() {
         setToastMessage(`File "${file.name}" quá lớn. Kích thước tối đa là 2MB`);
         setToastType('error');
         setShowToast(true);
-        hasError = true;
         return;
       }
       validFiles.push(file);
@@ -197,23 +191,18 @@ export default function NewInvestmentPage() {
 
   const removeImage = (index: number) => {
     setCollateralImages(prev => prev.filter((_, i) => i !== index));
-    setCollateralImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const uploadCollateralImages = async (): Promise<string[]> => {
     if (collateralImages.length === 0) return [];
 
     try {
-      setUploadingImages(true);
       const uploadedUrls = await uploadService.uploadMultipleImages(collateralImages);
       const urls = uploadedUrls.map(result => result.url);
-      setCollateralImageUrls(urls);
       return urls;
     } catch (error) {
       console.error('Failed to upload images:', error);
       throw new Error('Không thể tải lên hình ảnh tài sản thế chấp');
-    } finally {
-      setUploadingImages(false);
     }
   };
 
@@ -226,7 +215,7 @@ export default function NewInvestmentPage() {
       if (collateralImages.length > 0) {
         try {
           imageUrls = await uploadCollateralImages();
-        } catch (error) {
+        } catch {
           setToastMessage('Không thể tải lên hình ảnh tài sản thế chấp');
           setToastType('error');
           setShowToast(true);
@@ -235,7 +224,25 @@ export default function NewInvestmentPage() {
         }
       }
 
-      const submitData: any = {
+      const submitData: {
+        title: string;
+        description?: string;
+        investmentType: string;
+        requestedAmount: number;
+        farmlandId?: number;
+        targetDate?: string;
+        duration?: number;
+        expectedReturn?: number;
+        minimumInvestment?: number;
+        maximumInvestment?: number;
+        repaymentTerms?: string;
+        riskLevel: string;
+        riskFactors?: string[];
+        collateral?: string;
+        insurance?: string;
+        fundingDeadline?: string;
+        images?: string[];
+      } = {
         title: formData.title,
         description: formData.description || undefined,
         investmentType: formData.investmentType,
@@ -264,9 +271,10 @@ export default function NewInvestmentPage() {
       setTimeout(() => {
         router.push('/farmer/investments');
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create investment:', error);
-      setToastMessage(error.response?.data?.message || 'Tạo dự án thất bại');
+      const err = error as { response?: { data?: { message?: string } } };
+      setToastMessage(err.response?.data?.message || 'Tạo dự án thất bại');
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -676,6 +684,7 @@ export default function NewInvestmentPage() {
                             className="relative group bg-gray-100 rounded-xl p-2 border border-gray-200"
                           >
                             <div className="aspect-square rounded-lg overflow-hidden bg-gray-200">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={URL.createObjectURL(file)}
                                 alt={`Collateral ${index + 1}`}
@@ -800,11 +809,12 @@ export default function NewInvestmentPage() {
                       <p className="text-gray-600 mb-3">Hình ảnh tài sản thế chấp ({collateralImages.length} ảnh):</p>
                       <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                         {collateralImages.map((file, index) => (
-                          <div key={index} className="aspect-square rounded-lg overflow-hidden border border-green-200">
-                            <img
+                          <div key={index} className="aspect-square rounded-lg overflow-hidden border border-green-200 relative">
+                            <Image
                               src={URL.createObjectURL(file)}
                               alt={`Collateral ${index + 1}`}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                             />
                           </div>
                         ))}

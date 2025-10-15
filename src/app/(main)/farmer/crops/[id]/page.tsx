@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { cropsService, Crop } from '@/lib/api/crops';
-import { Sprout, MapPin, Calendar, TrendingUp, Edit2, Trash2, ArrowLeft, Leaf, Sun, Droplet, AlertCircle, BookOpen } from 'lucide-react';
+import { Sprout, MapPin, Calendar, Trash2, ArrowLeft, Leaf, AlertCircle, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
@@ -24,6 +24,7 @@ export default function CropDetailPage() {
 
   useEffect(() => {
     loadCrop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cropId]);
 
   const loadCrop = async () => {
@@ -32,9 +33,10 @@ export default function CropDetailPage() {
       setError('');
       const data = await cropsService.getCropById(cropId);
       setCrop(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load crop:', err);
-      setError(err.response?.data?.message || 'Không thể tải thông tin cây trồng');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin cây trồng');
     } finally {
       setLoading(false);
     }
@@ -53,9 +55,10 @@ export default function CropDetailPage() {
       setTimeout(() => {
         router.push('/farmer/crops');
       }, 1500);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to delete crop:', err);
-      setToastMessage(err.response?.data?.message || 'Xóa cây trồng thất bại');
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Xóa cây trồng thất bại');
       setToastType('error');
       setShowToast(true);
     }
@@ -232,14 +235,14 @@ export default function CropDetailPage() {
                       <span className="text-2xl font-bold text-blue-600">{crop.areaPlanted} hecta</span>
                     </div>
                   )}
-                  {crop.farmland && (
+                  {crop.farmlandId && (
                     <div className="p-4 bg-gray-50 rounded-xl">
                       <p className="text-sm text-gray-600 mb-1">Đất canh tác</p>
                       <Link
                         href={`/farmer/farmlands/${crop.farmlandId}`}
                         className="text-lg font-bold text-green-600 hover:text-green-700 hover:underline"
                       >
-                        {crop.farmland.name}
+                        Xem đất canh tác
                       </Link>
                     </div>
                   )}
@@ -326,8 +329,8 @@ export default function CropDetailPage() {
                           <p className="font-bold text-gray-900">{crop.cropVariety.plant.vietnameseName}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">Tên khoa học (Loài)</p>
-                          <p className="font-bold text-gray-900 italic">{crop.cropVariety.plant.scientificName}</p>
+                          <p className="text-sm text-gray-600">Tên cây (Tiếng Anh)</p>
+                          <p className="font-bold text-gray-900">{crop.cropVariety.plant.name}</p>
                         </div>
                       </>
                     )}

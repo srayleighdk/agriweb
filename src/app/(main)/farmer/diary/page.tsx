@@ -62,7 +62,7 @@ export default function FarmerDiaryPage() {
       ]);
       setCrops(cropsData);
       setLivestock(livestockData);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to fetch data:', error);
       setToastMessage('Không thể tải dữ liệu');
       setToastType('error');

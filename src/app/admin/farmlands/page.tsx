@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MapPin, CheckCircle, XCircle } from 'lucide-react';
+import { Search, CheckCircle } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 
 interface Farmland {
@@ -29,8 +29,8 @@ interface Farmland {
       email: string;
     };
   };
-  crops: any[];
-  livestock: any[];
+  crops: Array<Record<string, unknown>>;
+  livestock: Array<Record<string, unknown>>;
 }
 
 export default function FarmlandsPage() {
@@ -48,6 +48,7 @@ export default function FarmlandsPage() {
 
   useEffect(() => {
     loadFarmlands();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, typeFilter, provinceFilter, certifiedFilter]);
 
   const loadFarmlands = async () => {
@@ -55,7 +56,7 @@ export default function FarmlandsPage() {
       setLoading(true);
       setError('');
 
-      const params: any = {
+      const params: Record<string, unknown> = {
         page,
         limit,
       };
@@ -71,9 +72,10 @@ export default function FarmlandsPage() {
       setFarmlands(response.data.data || []);
       setTotal(response.data.total || 0);
       setTotalPages(response.data.totalPages || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load farmlands:', err);
-      setError(err.response?.data?.message || 'Failed to load farmlands');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load farmlands');
       setFarmlands([]);
     } finally {
       setLoading(false);

@@ -17,6 +17,7 @@ export default function PlantsPage() {
 
   useEffect(() => {
     loadPlants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search]);
 
   const loadPlants = async () => {
@@ -31,9 +32,10 @@ export default function PlantsPage() {
       setPlants(response.data || []);
       setTotal(response.total || 0);
       setTotalPages(response.totalPages || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load plants:', err);
-      setError(err.response?.data?.message || 'Failed to load plants');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load plants');
       setPlants([]);
     } finally {
       setLoading(false);
@@ -46,8 +48,9 @@ export default function PlantsPage() {
     try {
       await plantsService.deletePlant(id);
       loadPlants();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete plant');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Failed to delete plant');
     }
   };
 

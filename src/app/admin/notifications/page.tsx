@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { notificationsService, Notification } from '@/lib/api/notifications';
-import { Bell, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Bell, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Toast from '@/components/ui/Toast';
 
@@ -24,9 +24,10 @@ export default function NotificationsPage() {
       setError('');
       const data = await notificationsService.getNotifications();
       setNotifications(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load notifications:', err);
-      setError(err.response?.data?.message || 'Failed to load notifications');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load notifications');
       setNotifications([]);
     } finally {
       setLoading(false);
@@ -39,8 +40,9 @@ export default function NotificationsPage() {
     try {
       await notificationsService.deleteNotification(id);
       loadNotifications();
-    } catch (err: any) {
-      setToastMessage(err.response?.data?.message || 'Failed to delete notification');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Failed to delete notification');
       setToastType('error');
       setShowToast(true);
     }

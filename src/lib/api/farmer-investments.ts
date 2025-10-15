@@ -1,5 +1,4 @@
 import apiClient from './client';
-import { PaginatedResponse } from '@/types';
 
 export enum InvestmentStatus {
   PENDING = 'PENDING',
@@ -16,12 +15,25 @@ export interface FarmerInvestment {
   farmlandId: number;
   title: string;
   description: string;
+  investmentType?: string;
   fundingGoal: number;
   currentFunding: number;
   minInvestment: number;
   maxInvestment: number;
   expectedReturn: number;
   returnPeriod: number;
+  requestedAmount?: number;
+  targetDate?: string;
+  duration?: number;
+  minimumInvestment?: number;
+  maximumInvestment?: number;
+  repaymentTerms?: string;
+  riskLevel?: string;
+  riskFactors?: string[];
+  collateral?: string;
+  insurance?: string;
+  fundingDeadline?: string;
+  images?: string[];
   startDate: string;
   endDate: string;
   status: InvestmentStatus;
@@ -29,8 +41,18 @@ export interface FarmerInvestment {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
-  farmland?: any;
-  investorInvestments?: any[];
+  farmland?: {
+    id: number;
+    name: string;
+    size: number;
+    farmlandType: string;
+    address?: string;
+  };
+  investorInvestments?: Array<{
+    id: number;
+    amount: number;
+    status: string;
+  }>;
 }
 
 export interface CreateFarmerInvestmentDto {

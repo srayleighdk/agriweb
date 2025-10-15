@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  DollarSign, TrendingUp, Calendar, User, MapPin, AlertCircle,
+  Calendar, User, MapPin,
   CheckCircle, XCircle, Clock, FileText, Target, BarChart3
 } from 'lucide-react';
 import { investmentsService, Investment, InvestmentStatus } from '@/lib/api/investments';
@@ -32,11 +32,12 @@ export default function InvestmentDetailPage() {
     open: false,
     title: '',
     description: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   useEffect(() => {
     loadInvestment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [investmentId]);
 
   const loadInvestment = async () => {
@@ -45,16 +46,18 @@ export default function InvestmentDetailPage() {
       setError('');
       const data = await investmentsService.getInvestmentById(parseInt(investmentId));
       setInvestment(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load investment:', err);
-      setError(err.response?.data?.message || 'Không thể tải thông tin đầu tư');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin đầu tư');
     } finally {
       setLoading(false);
     }
   };
 
   const handleStatusChange = async (status: InvestmentStatus) => {
-    const statusNames = {
+    const statusNames: Record<InvestmentStatus, string> = {
+      [InvestmentStatus.PENDING]: 'Chờ xử lý',
       [InvestmentStatus.APPROVED]: 'Phê duyệt',
       [InvestmentStatus.REJECTED]: 'Từ chối',
       [InvestmentStatus.ACTIVE]: 'Kích hoạt',
@@ -62,7 +65,8 @@ export default function InvestmentDetailPage() {
       [InvestmentStatus.CANCELLED]: 'Hủy bỏ',
     };
 
-    const statusDescriptions = {
+    const statusDescriptions: Record<InvestmentStatus, string> = {
+      [InvestmentStatus.PENDING]: 'Bạn có chắc chắn muốn đặt lại trạng thái chờ xử lý không?',
       [InvestmentStatus.APPROVED]: 'Bạn có chắc chắn muốn phê duyệt đầu tư này không?',
       [InvestmentStatus.REJECTED]: 'Bạn có chắc chắn muốn từ chối đầu tư này không? Hành động này không thể hoàn tác.',
       [InvestmentStatus.ACTIVE]: 'Bạn có chắc chắn muốn kích hoạt đầu tư này không?',
@@ -70,12 +74,13 @@ export default function InvestmentDetailPage() {
       [InvestmentStatus.CANCELLED]: 'Bạn có chắc chắn muốn hủy bỏ đầu tư này không?',
     };
 
-    const variants = {
-      [InvestmentStatus.APPROVED]: 'info' as const,
-      [InvestmentStatus.REJECTED]: 'danger' as const,
-      [InvestmentStatus.ACTIVE]: 'info' as const,
-      [InvestmentStatus.COMPLETED]: 'info' as const,
-      [InvestmentStatus.CANCELLED]: 'danger' as const,
+    const variants: Record<InvestmentStatus, 'danger' | 'warning' | 'info'> = {
+      [InvestmentStatus.PENDING]: 'info',
+      [InvestmentStatus.APPROVED]: 'info',
+      [InvestmentStatus.REJECTED]: 'danger',
+      [InvestmentStatus.ACTIVE]: 'info',
+      [InvestmentStatus.COMPLETED]: 'info',
+      [InvestmentStatus.CANCELLED]: 'danger',
     };
 
     setConfirmDialog({
@@ -91,8 +96,9 @@ export default function InvestmentDetailPage() {
           setToastMessage(`Đã ${statusNames[status]?.toLowerCase()} thành công`);
           setToastType('success');
           setShowToast(true);
-        } catch (err: any) {
-          setToastMessage(err.response?.data?.message || 'Không thể cập nhật trạng thái');
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể cập nhật trạng thái');
           setToastType('error');
           setShowToast(true);
         } finally {

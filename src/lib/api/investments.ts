@@ -21,6 +21,8 @@ export interface Investment {
   expectedReturn: number | null;
   duration: number | null;
   riskLevel: string;
+  minimumInvestment: number | null;
+  maximumInvestment: number | null;
   createdAt: string;
   approvedAt?: string;
   startDate?: string;
@@ -59,9 +61,12 @@ export interface InvestorInvestment {
   status: InvestmentStatus;
   returnDate: string | null;
   actualReturnDate: string | null;
+  contractDocument: string | null;
+  notes: string | null;
   roi: number | null;
   isSuccessful: boolean | null;
   createdAt: string;
+  updatedAt: string;
   investor?: {
     id: number;
     investorType: string;
@@ -76,6 +81,7 @@ export interface InvestorInvestment {
     title: string;
     description: string | null;
     requestedAmount: number;
+    riskLevel?: string;
     farmer: {
       user: {
         name: string | null;
@@ -177,7 +183,7 @@ class InvestmentsService {
   /**
    * Get investment statistics
    */
-  async getInvestmentStats(): Promise<any> {
+  async getInvestmentStats(): Promise<Record<string, unknown>> {
     const response = await apiClient.get('/farmer-investments/stats');
     return response.data;
   }

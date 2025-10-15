@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { livestockService, Livestock } from '@/lib/api/livestock';
-import { Beef, MapPin, Calendar, TrendingUp, Edit2, Trash2, Plus, Filter, DollarSign, Eye } from 'lucide-react';
+import { Beef, MapPin, Calendar, TrendingUp, Trash2, Filter, DollarSign, Eye } from 'lucide-react';
 import Link from 'next/link';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
@@ -26,9 +26,10 @@ export default function LivestockManagementPage() {
       setError('');
       const data = await livestockService.getLivestock();
       setLivestock(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load livestock:', err);
-      setError(err.response?.data?.message || 'Không thể tải danh sách vật nuôi');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải danh sách vật nuôi');
       setLivestock([]);
     } finally {
       setLoading(false);
@@ -46,9 +47,10 @@ export default function LivestockManagementPage() {
       setToastType('success');
       setShowToast(true);
       loadLivestock();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete livestock:', err);
-      setToastMessage(err.response?.data?.message || 'Xóa vật nuôi thất bại');
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Xóa vật nuôi thất bại');
       setToastType('error');
       setShowToast(true);
     }

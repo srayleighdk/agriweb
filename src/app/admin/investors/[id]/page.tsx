@@ -51,7 +51,7 @@ interface InvestorDetail {
     isEmailVerified: boolean;
     isPhoneVerified: boolean;
   };
-  investments: any[];
+  investments: Array<Record<string, unknown>>;
 }
 
 type TabType = 'personal' | 'financial' | 'portfolio' | 'verification' | 'preferences';
@@ -69,6 +69,7 @@ export default function InvestorDetailPage() {
 
   useEffect(() => {
     loadInvestor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [investorId]);
 
   const loadInvestor = async () => {
@@ -77,9 +78,10 @@ export default function InvestorDetailPage() {
       setError('');
       const response = await apiClient.get(`/admin/investors/${investorId}`);
       setInvestor(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load investor:', err);
-      setError(err.response?.data?.message || 'Failed to load investor details');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load investor details');
     } finally {
       setLoading(false);
     }
@@ -92,8 +94,9 @@ export default function InvestorDetailPage() {
       setUpdating(true);
       await apiClient.patch(`/admin/investors/${investorId}`, { isVerified });
       await loadInvestor();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to update verification status');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Failed to update verification status');
     } finally {
       setUpdating(false);
     }
@@ -433,15 +436,15 @@ export default function InvestorDetailPage() {
                   <div className="text-center py-8 text-gray-500">No investments yet</div>
                 ) : (
                   <div className="space-y-4">
-                    {investor.investments.map((investment: any) => (
-                      <div key={investment.id} className="border rounded-lg p-4">
+                    {investor.investments.map((investment: Record<string, unknown>) => (
+                      <div key={investment.id as number} className="border rounded-lg p-4">
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h4 className="font-semibold text-gray-900">
-                              {investment.farmerInvestment?.title || 'Investment'}
+                              {(investment.farmerInvestment as { title?: string })?.title || 'Investment'}
                             </h4>
                             <p className="text-sm text-gray-600">
-                              {new Date(investment.investmentDate).toLocaleDateString()}
+                              {new Date(investment.investmentDate as string).toLocaleDateString()}
                             </p>
                           </div>
                           <span
@@ -453,13 +456,13 @@ export default function InvestorDetailPage() {
                                 : 'bg-gray-100 text-gray-800'
                             }`}
                           >
-                            {investment.status}
+                            {investment.status as string}
                           </span>
                         </div>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
                             <div className="text-gray-500">Amount</div>
-                            <div className="font-medium">₫{investment.amount.toLocaleString()}</div>
+                            <div className="font-medium">₫{(investment.amount as number).toLocaleString()}</div>
                           </div>
                           <div>
                             <div className="text-gray-500">Expected Return</div>
@@ -470,7 +473,7 @@ export default function InvestorDetailPage() {
                           <div>
                             <div className="text-gray-500">ROI</div>
                             <div className="font-medium">
-                              {investment.roi ? `${investment.roi.toFixed(2)}%` : '-'}
+                              {investment.roi ? `${(investment.roi as number).toFixed(2)}%` : '-'}
                             </div>
                           </div>
                         </div>

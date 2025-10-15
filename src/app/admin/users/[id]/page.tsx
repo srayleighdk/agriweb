@@ -40,6 +40,7 @@ export default function UserDetailPage() {
 
   useEffect(() => {
     loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const loadUser = async () => {
@@ -49,9 +50,10 @@ export default function UserDetailPage() {
       const response = await apiClient.get(`/admin/users/${userId}`);
       setUser(response.data);
       setFormData(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load user:', err);
-      setError(err.response?.data?.message || 'Failed to load user details');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load user details');
     } finally {
       setLoading(false);
     }
@@ -66,8 +68,9 @@ export default function UserDetailPage() {
       setToastMessage('User updated successfully');
       setToastType('success');
       setShowToast(true);
-    } catch (err: any) {
-      setToastMessage(err.response?.data?.message || 'Failed to update user');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Failed to update user');
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -81,8 +84,9 @@ export default function UserDetailPage() {
     try {
       await apiClient.delete(`/admin/users/${userId}`);
       router.push('/admin/users');
-    } catch (err: any) {
-      setToastMessage(err.response?.data?.message || 'Failed to delete user');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Failed to delete user');
       setToastType('error');
       setShowToast(true);
     }

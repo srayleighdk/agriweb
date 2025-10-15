@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { investmentsService, Investment, InvestorInvestment, InvestmentStatus } from '@/lib/api/investments';
-import { Search, CheckCircle, XCircle, Clock, DollarSign } from 'lucide-react';
+import { Search, CheckCircle, XCircle } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -35,11 +35,12 @@ export default function InvestmentsPage() {
     open: false,
     title: '',
     description: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   useEffect(() => {
     loadInvestments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, statusFilter, viewType]);
 
   const loadInvestments = async () => {
@@ -68,20 +69,21 @@ export default function InvestmentsPage() {
         setTotal(response.total || 0);
         setTotalPages(response.totalPages || 0);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load investments:', err);
-      console.error('Error response:', err.response);
+      const error = err as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      console.error('Error response:', error.response);
 
       let errorMessage = 'Không thể tải danh sách đầu tư';
 
-      if (err.response?.status === 401) {
+      if (error.response?.status === 401) {
         errorMessage = 'Chưa đăng nhập. Vui lòng đăng nhập lại.';
-      } else if (err.response?.status === 403) {
+      } else if (error.response?.status === 403) {
         errorMessage = 'Không có quyền truy cập. Yêu cầu quyền quản trị.';
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       setError(errorMessage);
@@ -105,8 +107,9 @@ export default function InvestmentsPage() {
           setToastMessage('Phê duyệt thành công');
           setToastType('success');
           setShowToast(true);
-        } catch (err: any) {
-          setToastMessage(err.response?.data?.message || 'Không thể phê duyệt');
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể phê duyệt');
           setToastType('error');
           setShowToast(true);
         }
@@ -127,8 +130,9 @@ export default function InvestmentsPage() {
           setToastMessage('Đã từ chối yêu cầu đầu tư');
           setToastType('success');
           setShowToast(true);
-        } catch (err: any) {
-          setToastMessage(err.response?.data?.message || 'Không thể từ chối');
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setToastMessage(error.response?.data?.message || 'Không thể từ chối');
           setToastType('error');
           setShowToast(true);
         }
@@ -171,21 +175,19 @@ export default function InvestmentsPage() {
           <nav className="flex -mb-px space-x-8">
             <button
               onClick={() => { setViewType('farmer'); setPage(1); }}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                viewType === 'farmer'
-                  ? 'border-green-600 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${viewType === 'farmer'
+                ? 'border-green-600 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Yêu cầu từ Nông dân
             </button>
             <button
               onClick={() => { setViewType('investor'); setPage(1); }}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                viewType === 'investor'
-                  ? 'border-green-600 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${viewType === 'investor'
+                ? 'border-green-600 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Đầu tư từ Nhà đầu tư
             </button>
@@ -247,7 +249,7 @@ export default function InvestmentsPage() {
             </button>
           </div>
         ) : (viewType === 'farmer' && (!investments || investments.length === 0)) ||
-           (viewType === 'investor' && (!investorInvestments || investorInvestments.length === 0)) ? (
+          (viewType === 'investor' && (!investorInvestments || investorInvestments.length === 0)) ? (
           <div className="p-8 text-center text-gray-500">Không tìm thấy đầu tư</div>
         ) : (
           <>

@@ -25,7 +25,7 @@ export default function NewNotificationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data: any = {
+    const data: Record<string, unknown> = {
       title: formData.title,
       message: formData.message,
       type: formData.type,
@@ -46,8 +46,9 @@ export default function NewNotificationPage() {
       setSending(true);
       await apiClient.post('/admin/notifications', data);
       router.push('/admin/notifications');
-    } catch (err: any) {
-      setToastMessage(err.response?.data?.message || 'Failed to send notification');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Failed to send notification');
       setToastType('error');
       setShowToast(true);
     } finally {

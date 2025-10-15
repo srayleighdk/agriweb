@@ -11,8 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import {
   farmerInvestmentsService,
   InvestmentStatus,
+  FarmerInvestment,
 } from '@/lib/api/farmer-investments';
-import { getImageUrl } from '@/lib/api/client';
 import {
   ArrowLeft,
   Calendar,
@@ -20,16 +20,12 @@ import {
   TrendingUp,
   Users,
   MapPin,
-  FileText,
   AlertCircle,
   Edit,
   Trash2,
   CheckCircle,
   Clock,
   XCircle,
-  Image as ImageIcon,
-  Shield,
-  Target,
 } from 'lucide-react';
 
 export default function InvestmentDetailPage() {
@@ -37,7 +33,7 @@ export default function InvestmentDetailPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  const [investment, setInvestment] = useState<any>(null);
+  const [investment, setInvestment] = useState<FarmerInvestment | null>(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -47,6 +43,7 @@ export default function InvestmentDetailPage() {
     if (id) {
       loadInvestment();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadInvestment = async () => {
@@ -77,16 +74,17 @@ export default function InvestmentDetailPage() {
       setTimeout(() => {
         router.push('/farmer/investments');
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to delete investment:', error);
-      setToastMessage(error.response?.data?.message || 'Xóa dự án thất bại!');
+      const err = error as { response?: { data?: { message?: string } } };
+      setToastMessage(err.response?.data?.message || 'Xóa dự án thất bại!');
       setToastType('error');
       setShowToast(true);
     }
   };
 
   const getStatusBadge = (status: InvestmentStatus) => {
-    const badges: Record<InvestmentStatus, { label: string; className: string; icon: any }> = {
+    const badges: Record<InvestmentStatus, { label: string; className: string; icon: React.ComponentType<{ className?: string }> }> = {
       PENDING: { label: 'Chờ duyệt', className: 'bg-yellow-500', icon: Clock },
       APPROVED: { label: 'Đã duyệt', className: 'bg-blue-500', icon: CheckCircle },
       REJECTED: { label: 'Từ chối', className: 'bg-red-500', icon: XCircle },
@@ -104,20 +102,9 @@ export default function InvestmentDetailPage() {
     );
   };
 
-  const getRiskLevelBadge = (riskLevel: string) => {
-    const badges: Record<string, { label: string; className: string }> = {
-      LOW: { label: 'Thấp', className: 'bg-green-100 text-green-800' },
-      MEDIUM: { label: 'Trung bình', className: 'bg-yellow-100 text-yellow-800' },
-      HIGH: { label: 'Cao', className: 'bg-orange-100 text-orange-800' },
-      VERY_HIGH: { label: 'Rất cao', className: 'bg-red-100 text-red-800' },
-    };
-    const badge = badges[riskLevel] || badges.MEDIUM;
-    return <Badge className={badge.className}>{badge.label}</Badge>;
-  };
-
   const getFundingPercentage = () => {
     if (!investment) return 0;
-    return Math.min((investment.currentAmount / investment.requestedAmount) * 100, 100);
+    return Math.min((investment.currentFunding / investment.fundingGoal) * 100, 100);
   };
 
   if (loading) {
@@ -217,13 +204,13 @@ export default function InvestmentDetailPage() {
                       <div>
                         <p className="text-sm text-gray-600">Đã huy động</p>
                         <p className="text-2xl font-bold text-green-600">
-                          {(investment.currentAmount / 1000000).toFixed(0)}M VNĐ
+                          {(investment.currentFunding / 1000000).toFixed(0)}M VNĐ
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Mục tiêu</p>
                         <p className="text-2xl font-bold text-gray-900">
-                          {(investment.requestedAmount / 1000000).toFixed(0)}M VNĐ
+                          {(investment.fundingGoal / 1000000).toFixed(0)}M VNĐ
                         </p>
                       </div>
                     </div>
@@ -243,78 +230,12 @@ export default function InvestmentDetailPage() {
                 </Card>
               )}
 
-              {/* Collateral Images */}
-              {investment.images && investment.images.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5" />
-                      Hình ảnh tài sản thế chấp
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {investment.images.map((imageUrl: string, index: number) => (
-                        <div key={index} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                          <img
-                            src={getImageUrl(imageUrl)}
-                            alt={`Collateral ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Risk Assessment */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5" />
-                    Đánh giá rủi ro
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Mức độ rủi ro</p>
-                    {getRiskLevelBadge(investment.riskLevel)}
-                  </div>
-
-                  {investment.riskFactors && investment.riskFactors.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Các yếu tố rủi ro</p>
-                      <div className="flex flex-wrap gap-2">
-                        {investment.riskFactors.map((factor: string, index: number) => (
-                          <Badge key={index} variant="outline" className="bg-red-50 text-red-800 border-red-200">
-                            {factor}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {investment.collateral && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Tài sản thế chấp</p>
-                      <p className="text-gray-700">{investment.collateral}</p>
-                    </div>
-                  )}
-
-                  {investment.insurance && (
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Bảo hiểm</p>
-                      <p className="text-gray-700">{investment.insurance}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Note: Images, risk factors, collateral, and insurance are not in the FarmerInvestment type */}
+              {/* These fields may need to be added to the backend API response */}
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Investment Details */}
               <Card>
                 <CardHeader>
                   <CardTitle>Chi tiết đầu tư</CardTitle>
@@ -333,7 +254,7 @@ export default function InvestmentDetailPage() {
                       <Calendar className="h-4 w-4" />
                       <span>Thời gian</span>
                     </div>
-                    <p className="text-xl font-bold">{investment.duration} tháng</p>
+                    <p className="text-xl font-bold">{investment.returnPeriod} tháng</p>
                   </div>
 
                   <div>
@@ -342,18 +263,18 @@ export default function InvestmentDetailPage() {
                       <span>Đầu tư tối thiểu</span>
                     </div>
                     <p className="text-xl font-bold">
-                      {(investment.minimumInvestment / 1000000).toFixed(0)}M VNĐ
+                      {(investment.minInvestment / 1000000).toFixed(0)}M VNĐ
                     </p>
                   </div>
 
-                  {investment.maximumInvestment && (
+                  {investment.maxInvestment && (
                     <div>
                       <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                         <DollarSign className="h-4 w-4" />
                         <span>Đầu tư tối đa</span>
                       </div>
                       <p className="text-xl font-bold">
-                        {(investment.maximumInvestment / 1000000).toFixed(0)}M VNĐ
+                        {(investment.maxInvestment / 1000000).toFixed(0)}M VNĐ
                       </p>
                     </div>
                   )}
@@ -363,34 +284,33 @@ export default function InvestmentDetailPage() {
                       <Users className="h-4 w-4" />
                       <span>Số nhà đầu tư</span>
                     </div>
-                    <p className="text-xl font-bold">{investment.investorCount || 0}</p>
+                    <p className="text-xl font-bold">
+                      {investment.investorInvestments && Array.isArray(investment.investorInvestments)
+                        ? investment.investorInvestments.length
+                        : 0}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Timeline */}
               <Card>
                 <CardHeader>
                   <CardTitle>Thời gian</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {investment.targetDate && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Hoàn thành dự kiến:</span>
-                      <span className="font-semibold">
-                        {new Date(investment.targetDate).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Ngày bắt đầu:</span>
+                    <span className="font-semibold">
+                      {investment.startDate ? new Date(investment.startDate).toLocaleDateString('vi-VN') : 'Chưa có'}
+                    </span>
+                  </div>
 
-                  {investment.fundingDeadline && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Hạn chót gọi vốn:</span>
-                      <span className="font-semibold">
-                        {new Date(investment.fundingDeadline).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Ngày kết thúc:</span>
+                    <span className="font-semibold">
+                      {investment.endDate ? new Date(investment.endDate).toLocaleDateString('vi-VN') : 'Chưa có'}
+                    </span>
+                  </div>
 
                   {investment.approvedAt && (
                     <div className="flex justify-between text-sm">
@@ -403,8 +323,7 @@ export default function InvestmentDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Farmland Info */}
-              {investment.farmland && (
+              {investment.farmlandId && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -413,23 +332,7 @@ export default function InvestmentDetailPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="font-semibold text-lg mb-1">{investment.farmland.name}</p>
-                    <p className="text-sm text-gray-600">Diện tích: {investment.farmland.size} hecta</p>
-                    {investment.farmland.province && (
-                      <p className="text-sm text-gray-600">{investment.farmland.province}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Repayment Terms */}
-              {investment.repaymentTerms && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Điều khoản hoàn trả</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-700">{investment.repaymentTerms}</p>
+                    <p className="text-sm text-gray-600">ID: {investment.farmlandId}</p>
                   </CardContent>
                 </Card>
               )}

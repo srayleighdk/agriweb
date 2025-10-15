@@ -75,9 +75,10 @@ export default function AddCropModal({ farmlandId, onClose, onSuccess }: AddCrop
         setToastType('success');
         setShowToast(true);
       }, 100);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create crop:', error);
-      setToastMessage(error.response?.data?.message || 'Thêm cây trồng thất bại');
+      const err = error as { response?: { data?: { message?: string } } };
+      setToastMessage(err.response?.data?.message || 'Thêm cây trồng thất bại');
       setToastType('error');
       setShowToast(true);
     } finally {

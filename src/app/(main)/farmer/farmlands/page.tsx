@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { farmlandsService, Farmland } from '@/lib/api/farmlands';
-import { MapPin, Plus, Edit, Sprout, Beef, Eye, BarChart3 } from 'lucide-react';
+import { MapPin, Plus, Sprout, Beef, Eye } from 'lucide-react';
 import Link from 'next/link';
 import FarmerNav from '@/components/layout/FarmerNav';
 import FarmlandOnboarding from '@/components/farmer/FarmlandOnboarding';
@@ -35,9 +35,12 @@ export default function FarmlandsPage() {
       // Backend returns { data: Farmland[] } or just Farmland[]
       const farmlandsData = Array.isArray(response) ? response : (response.data || []);
       setFarmlands(farmlandsData);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load farmlands:', err);
-      setError(err.response?.data?.message || 'Failed to load farmlands');
+      const errorMessage = err && typeof err === 'object' && 'response' in err 
+        ? (err.response as { data?: { message?: string } })?.data?.message || 'Failed to load farmlands'
+        : 'Failed to load farmlands';
+      setError(errorMessage);
       setFarmlands([]);
     } finally {
       setLoading(false);

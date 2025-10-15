@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { investmentsService, Investment } from '@/lib/api/investments';
 import { investorService } from '@/lib/api/investor';
@@ -10,7 +10,6 @@ import {
   DollarSign,
   TrendingUp,
   Calendar,
-  Target,
   AlertTriangle,
   MapPin,
   User,
@@ -45,23 +44,24 @@ export default function InvestmentDetailPage() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
-  useEffect(() => {
-    loadInvestmentDetail();
-  }, [investmentId]);
-
-  const loadInvestmentDetail = async () => {
+  const loadInvestmentDetail = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       const data = await investmentsService.getInvestmentById(investmentId);
       setInvestment(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load investment details:', err);
-      setError(err.response?.data?.message || 'Không thể tải thông tin cơ hội đầu tư');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin cơ hội đầu tư');
     } finally {
       setLoading(false);
     }
-  };
+  }, [investmentId]);
+
+  useEffect(() => {
+    loadInvestmentDetail();
+  }, [loadInvestmentDetail]);
 
   const formatNumberWithCommas = (value: string): string => {
     // Remove all non-digit characters
@@ -123,8 +123,9 @@ export default function InvestmentDetailPage() {
       setTimeout(() => {
         router.push('/investor/portfolio');
       }, 1500);
-    } catch (err: any) {
-      setSubmitError(err.response?.data?.message || 'Không thể tạo đầu tư. Vui lòng thử lại.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setSubmitError(error.response?.data?.message || 'Không thể tạo đầu tư. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }

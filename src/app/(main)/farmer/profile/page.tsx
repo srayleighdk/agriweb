@@ -29,12 +29,46 @@ import {
   X,
 } from 'lucide-react';
 
+interface ProfileData {
+  name: string | null;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  province: string | null;
+  commune: string | null;
+  avatar?: string | null;
+  createdAt?: string;
+  farmer?: {
+    isVerified?: boolean;
+    verificationLevel?: string;
+    totalProjects?: number;
+    successfulProjects?: number;
+    creditScore?: number;
+    riskLevel?: string;
+    farmingExperience?: number;
+    farmingGeneration?: number;
+    monthlyIncome?: number;
+    totalAssets?: number;
+    householdMembers?: number;
+    onTimeRepaymentRate?: number;
+    cooperativeMember?: boolean;
+    cooperativeName?: string;
+    bankName?: string;
+    bankAccountNumber?: string;
+    bankAccountVerified?: boolean;
+    nationalId?: string;
+    nationalIdIssueDate?: string;
+    nationalIdIssuePlace?: string;
+    dateOfBirth?: string;
+  };
+}
+
 export default function FarmerProfilePage() {
-  const { user, setAuth } = useAuthStore();
+  useAuthStore();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -83,7 +117,7 @@ export default function FarmerProfilePage() {
     }
   };
 
-  const getInitials = (name?: string) => {
+  const getInitials = (name?: string | null) => {
     if (!name) return 'F';
     return name
       .split(' ')
@@ -137,7 +171,7 @@ export default function FarmerProfilePage() {
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center">
                     <Avatar className="h-32 w-32 mb-4">
-                      <AvatarImage src={profileData?.avatar} alt={profileData?.name} />
+                      <AvatarImage src={profileData?.avatar || undefined} alt={profileData?.name || undefined} />
                       <AvatarFallback className="bg-green-600 text-white text-3xl">
                         {getInitials(profileData?.name)}
                       </AvatarFallback>
@@ -288,12 +322,14 @@ export default function FarmerProfilePage() {
                     </div>
                     <div>
                       <Label>Ngày tham gia</Label>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <span>
-                          {new Date(profileData?.createdAt).toLocaleDateString('vi-VN')}
-                        </span>
-                      </div>
+                      {profileData?.createdAt && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Calendar className="h-4 w-4 text-gray-500" />
+                          <span>
+                            {new Date(profileData.createdAt).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="md:col-span-2">
                       <Label htmlFor="address">Địa chỉ</Label>

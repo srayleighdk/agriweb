@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LayoutDashboard, MapPin, DollarSign, BookOpen, User, LogOut, Menu, X, Bell, Home, Beef, Sprout } from 'lucide-react';
+import { LayoutDashboard, MapPin, DollarSign, BookOpen, User, LogOut, Menu, X, Home, Beef, Sprout } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import NotificationDropdown from '@/components/notifications/NotificationDropdown';
@@ -40,7 +40,7 @@ export default function FarmerNav() {
     router.push('/');
   };
 
-  const getInitials = (name?: string) => {
+  const getInitials = (name?: string | null) => {
     if (!name) return 'ND';
     return name
       .split(' ')
@@ -108,7 +108,7 @@ export default function FarmerNav() {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={user?.avatar || undefined} alt={user?.name} />
+                    <AvatarImage src={user?.avatar || undefined} alt={user?.name || undefined} />
                     <AvatarFallback className="bg-green-600 text-white">
                       {getInitials(user?.name)}
                     </AvatarFallback>

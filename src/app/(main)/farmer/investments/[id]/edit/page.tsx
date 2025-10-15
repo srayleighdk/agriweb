@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
 import { farmlandsService, Farmland } from '@/lib/api/farmlands';
@@ -55,13 +56,9 @@ export default function EditInvestmentPage() {
   const [newRiskFactor, setNewRiskFactor] = useState('');
   const [collateralImages, setCollateralImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingImages] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [id]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoadingData(true);
 
@@ -98,15 +95,19 @@ export default function EditInvestmentPage() {
       });
 
       setExistingImages(investment.images || []);
-    } catch (error) {
-      console.error('Failed to load data:', error);
+    } catch (_error) {
+      console.error('Failed to load data:', _error);
       setToastMessage('Không thể tải dữ liệu');
       setToastType('error');
       setShowToast(true);
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const investmentTypes = [
     { value: 'CROP_FUNDING', label: 'Tài trợ cây trồng', requiresFarmland: true },
@@ -220,14 +221,11 @@ export default function EditInvestmentPage() {
     if (collateralImages.length === 0) return [];
 
     try {
-      setUploadingImages(true);
       const uploadedUrls = await uploadService.uploadMultipleImages(collateralImages);
       return uploadedUrls.map(result => result.url);
     } catch (error) {
       console.error('Failed to upload images:', error);
       throw new Error('Không thể tải lên hình ảnh tài sản thế chấp');
-    } finally {
-      setUploadingImages(false);
     }
   };
 
@@ -240,7 +238,7 @@ export default function EditInvestmentPage() {
       if (collateralImages.length > 0) {
         try {
           newImageUrls = await uploadCollateralImages();
-        } catch (error) {
+        } catch {
           setToastMessage('Không thể tải lên hình ảnh tài sản thế chấp');
           setToastType('error');
           setShowToast(true);
@@ -252,7 +250,25 @@ export default function EditInvestmentPage() {
       // Combine existing and new images
       const allImages = [...existingImages, ...newImageUrls];
 
-      const submitData: any = {
+      const submitData: {
+        title: string;
+        description?: string;
+        investmentType: string;
+        requestedAmount: number;
+        farmlandId?: number;
+        targetDate?: string;
+        duration?: number;
+        expectedReturn?: number;
+        minimumInvestment?: number;
+        maximumInvestment?: number;
+        repaymentTerms?: string;
+        riskLevel: string;
+        riskFactors?: string[];
+        collateral?: string;
+        insurance?: string;
+        fundingDeadline?: string;
+        images?: string[];
+      } = {
         title: formData.title,
         description: formData.description || undefined,
         investmentType: formData.investmentType,
@@ -281,9 +297,9 @@ export default function EditInvestmentPage() {
       setTimeout(() => {
         router.push(`/farmer/investments/${id}`);
       }, 1500);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to update investment:', error);
-      setToastMessage(error.response?.data?.message || 'Cập nhật dự án thất bại');
+      setToastMessage('Cập nhật dự án thất bại');
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -666,11 +682,12 @@ export default function EditInvestmentPage() {
                             key={index}
                             className="relative group bg-gray-100 rounded-xl p-2 border border-gray-200"
                           >
-                            <div className="aspect-square rounded-lg overflow-hidden bg-gray-200">
-                              <img
+                            <div className="aspect-square rounded-lg overflow-hidden bg-gray-200 relative">
+                              <Image
                                 src={getImageUrl(url)}
                                 alt={`Existing ${index + 1}`}
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
                               />
                             </div>
                             <button
@@ -720,11 +737,12 @@ export default function EditInvestmentPage() {
                               key={index}
                               className="relative group bg-gray-100 rounded-xl p-2 border border-gray-200"
                             >
-                              <div className="aspect-square rounded-lg overflow-hidden bg-gray-200">
-                                <img
+                              <div className="aspect-square rounded-lg overflow-hidden bg-gray-200 relative">
+                                <Image
                                   src={URL.createObjectURL(file)}
                                   alt={`New ${index + 1}`}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  className="object-cover"
                                 />
                               </div>
                               <button

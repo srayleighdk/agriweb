@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { livestockService, Livestock } from '@/lib/api/livestock';
-import { Beef, MapPin, Calendar, TrendingUp, Edit2, Trash2, ArrowLeft, DollarSign, Activity, AlertCircle, Package, BookOpen } from 'lucide-react';
+import { Beef, Calendar, TrendingUp, Trash2, ArrowLeft, DollarSign, Activity, AlertCircle, Package, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
@@ -22,23 +22,24 @@ export default function LivestockDetailPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showAddDiaryModal, setShowAddDiaryModal] = useState(false);
 
-  useEffect(() => {
-    loadLivestock();
-  }, [livestockId]);
-
-  const loadLivestock = async () => {
+  const loadLivestock = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       const data = await livestockService.getLivestockById(livestockId);
       setLivestock(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load livestock:', err);
-      setError(err.response?.data?.message || 'Không thể tải thông tin vật nuôi');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải thông tin vật nuôi');
     } finally {
       setLoading(false);
     }
-  };
+  }, [livestockId]);
+
+  useEffect(() => {
+    loadLivestock();
+  }, [loadLivestock]);
 
   const handleDelete = async () => {
     if (!livestock || !confirm(`Bạn có chắc muốn xóa vật nuôi "${livestock.name || 'này'}"?`)) {
@@ -53,9 +54,10 @@ export default function LivestockDetailPage() {
       setTimeout(() => {
         router.push('/farmer/livestock');
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete livestock:', err);
-      setToastMessage(err.response?.data?.message || 'Xóa vật nuôi thất bại');
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Xóa vật nuôi thất bại');
       setToastType('error');
       setShowToast(true);
     }
@@ -232,14 +234,14 @@ export default function LivestockDetailPage() {
                     <span className="text-gray-700 font-semibold text-lg">Số lượng</span>
                     <span className="text-4xl font-bold text-orange-600">{livestock.count}</span>
                   </div>
-                  {livestock.farmland && (
+                  {livestock.farmlandId && (
                     <div className="p-4 bg-gray-50 rounded-xl">
                       <p className="text-sm text-gray-600 mb-1">Đất canh tác</p>
                       <Link
                         href={`/farmer/farmlands/${livestock.farmlandId}`}
                         className="text-lg font-bold text-orange-600 hover:text-orange-700 hover:underline"
                       >
-                        {livestock.farmland.name}
+                        Xem đất canh tác
                       </Link>
                     </div>
                   )}
@@ -357,10 +359,12 @@ export default function LivestockDetailPage() {
                           <p className="text-sm text-gray-600">Loài vật</p>
                           <p className="font-bold text-gray-900">{livestock.livestockBreed.animalSpecies.vietnameseName}</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Tên khoa học (Loài)</p>
-                          <p className="font-bold text-gray-900 italic">{livestock.livestockBreed.animalSpecies.scientificName}</p>
-                        </div>
+                        {livestock.livestockBreed.animalSpecies.scientificName && (
+                          <div>
+                            <p className="text-sm text-gray-600">Tên khoa học (Loài)</p>
+                            <p className="font-bold text-gray-900 italic">{livestock.livestockBreed.animalSpecies.scientificName}</p>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

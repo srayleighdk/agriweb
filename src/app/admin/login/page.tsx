@@ -38,8 +38,9 @@ export default function AdminLoginPage() {
 
       // Redirect to admin dashboard
       router.push('/admin');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }

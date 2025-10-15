@@ -41,7 +41,7 @@ export default function NewPlantPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data: any = {
+    const data: Record<string, unknown> = {
       vietnameseName: formData.vietnameseName,
       englishName: formData.englishName || null,
       scientificName: formData.scientificName || null,
@@ -75,8 +75,9 @@ export default function NewPlantPage() {
       setSaving(true);
       await apiClient.post('/admin/plants', data);
       router.push('/admin/plants');
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to create plant');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Failed to create plant');
     } finally {
       setSaving(false);
     }

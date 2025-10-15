@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { cropsService, Crop } from '@/lib/api/crops';
-import { Sprout, MapPin, Calendar, TrendingUp, Edit2, Trash2, Plus, Filter, Eye } from 'lucide-react';
+import { Sprout, MapPin, Calendar, TrendingUp, Trash2, Filter, Eye } from 'lucide-react';
 import Link from 'next/link';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
@@ -26,9 +26,10 @@ export default function CropsManagementPage() {
       setError('');
       const data = await cropsService.getCrops();
       setCrops(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load crops:', err);
-      setError(err.response?.data?.message || 'Không thể tải danh sách cây trồng');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải danh sách cây trồng');
       setCrops([]);
     } finally {
       setLoading(false);
@@ -46,9 +47,10 @@ export default function CropsManagementPage() {
       setToastType('success');
       setShowToast(true);
       loadCrops();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to delete crop:', err);
-      setToastMessage(err.response?.data?.message || 'Xóa cây trồng thất bại');
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Xóa cây trồng thất bại');
       setToastType('error');
       setShowToast(true);
     }

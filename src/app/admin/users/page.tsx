@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usersService } from '@/lib/api/users';
 import { User, Role } from '@/types';
-import { Search, Filter, UserPlus, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Search, Edit } from 'lucide-react';
 import Link from 'next/link';
 
 export default function UsersPage() {
@@ -19,6 +19,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, roleFilter]);
 
   const loadUsers = async () => {
@@ -34,9 +35,10 @@ export default function UsersPage() {
       setUsers(response.data || []);
       setTotal(response.total || 0);
       setTotalPages(response.totalPages || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load users:', err);
-      setError(err.response?.data?.message || 'Failed to load users. Please try again.');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load users. Please try again.');
       setUsers([]);
     } finally {
       setLoading(false);

@@ -110,9 +110,9 @@ export default function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center space-x-2 hover:bg-gray-50 rounded-lg p-2 transition">
                       <Avatar className="h-9 w-9">
-                        <AvatarImage src={user?.avatar || undefined} alt={user?.name} />
+                        <AvatarImage src={user?.avatar || undefined} alt={user?.name || undefined} />
                         <AvatarFallback className="bg-green-600 text-white">
-                          {getInitials(user?.name)}
+                          {getInitials(user?.name || undefined)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-left hidden lg:block">
@@ -193,9 +193,9 @@ export default function Navbar() {
                   {/* User Info */}
                   <div className="flex items-center space-x-3 px-3 py-3 bg-gray-50 rounded-lg mb-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user?.avatar || undefined} alt={user?.name} />
+                      <AvatarImage src={user?.avatar || undefined} alt={user?.name || undefined} />
                       <AvatarFallback className="bg-green-600 text-white">
-                        {getInitials(user?.name)}
+                        {getInitials(user?.name || undefined)}
                       </AvatarFallback>
                     </Avatar>
                     <div>

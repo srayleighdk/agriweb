@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Eye, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Eye } from 'lucide-react';
 import Link from 'next/link';
 import apiClient from '@/lib/api/client';
 
@@ -47,6 +47,7 @@ export default function FarmersPage() {
 
   useEffect(() => {
     loadFarmers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, verificationFilter, riskFilter, provinceFilter]);
 
   const loadFarmers = async () => {
@@ -54,7 +55,7 @@ export default function FarmersPage() {
       setLoading(true);
       setError('');
 
-      const params: any = {
+      const params: Record<string, unknown> = {
         page,
         limit,
       };
@@ -68,9 +69,10 @@ export default function FarmersPage() {
       setFarmers(response.data.data || []);
       setTotal(response.data.total || 0);
       setTotalPages(response.data.totalPages || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load farmers:', err);
-      setError(err.response?.data?.message || 'Failed to load farmers');
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load farmers');
       setFarmers([]);
     } finally {
       setLoading(false);

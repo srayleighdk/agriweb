@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FarmerNav from '@/components/layout/FarmerNav';
-import { MapPin, ArrowRight, ArrowLeft, Check, Droplet, Zap, AlertCircle } from 'lucide-react';
+import { MapPin, ArrowRight, ArrowLeft, Check, Droplet, Zap } from 'lucide-react';
 import { farmlandsService } from '@/lib/api/farmlands';
-import { farmerService } from '@/lib/api/farmer';
 import { tinhService, Tinh, Xa } from '@/lib/api/tinh';
 import Toast from '@/components/ui/Toast';
 import dynamic from 'next/dynamic';
@@ -43,7 +42,6 @@ export default function NewFarmlandPage() {
     electricityAccess: false,
   });
   const [loading, setLoading] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
   const [provinces, setProvinces] = useState<Tinh[]>([]);
   const [communes, setCommunes] = useState<Xa[]>([]);
   const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(null);
@@ -53,9 +51,6 @@ export default function NewFarmlandPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
-    // Initialize map when component mounts
-    setTimeout(() => setMapReady(true), 500);
-
     // Load provinces
     loadProvinces();
   }, []);
@@ -66,7 +61,7 @@ export default function NewFarmlandPage() {
       loadCommunes(selectedProvinceId);
     } else {
       setCommunes([]);
-      setFormData({ ...formData, commune: '' });
+      setFormData(prev => ({ ...prev, commune: '' }));
     }
   }, [selectedProvinceId]);
 
@@ -142,7 +137,7 @@ export default function NewFarmlandPage() {
       setLoading(true);
 
       // Prepare data for submission
-      const submitData: any = {
+      const submitData = {
         name: formData.name,
         size: parseFloat(formData.size),
         farmlandType: formData.farmlandType,
@@ -152,12 +147,10 @@ export default function NewFarmlandPage() {
         commune: formData.commune || undefined,
         irrigationAccess: formData.irrigationAccess,
         electricityAccess: formData.electricityAccess,
+        coordinates: formData.latitude !== null && formData.longitude !== null 
+          ? `${formData.latitude},${formData.longitude}` 
+          : undefined,
       };
-
-      // Convert latitude/longitude to coordinates string
-      if (formData.latitude !== null && formData.longitude !== null) {
-        submitData.coordinates = `${formData.latitude},${formData.longitude}`;
-      }
 
       await farmlandsService.createFarmland(submitData);
 
@@ -174,9 +167,10 @@ export default function NewFarmlandPage() {
           router.push('/farmer/farmlands');
         }
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create farmland:', error);
-      setToastMessage(error.response?.data?.message || 'Tạo đất canh tác thất bại');
+      const err = error as { response?: { data?: { message?: string } } };
+      setToastMessage(err.response?.data?.message || 'Tạo đất canh tác thất bại');
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -362,7 +356,7 @@ export default function NewFarmlandPage() {
                     </label>
                     <select
                       value={formData.farmlandType}
-                      onChange={(e) => setFormData({ ...formData, farmlandType: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, farmlandType: e.target.value as 'CROP' | 'LIVESTOCK' | 'MIX' })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
                       <option value="CROP">Trồng trọt</option>

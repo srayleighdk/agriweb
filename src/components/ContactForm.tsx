@@ -34,7 +34,7 @@ export default function ContactForm() {
     setSuccess(false);
 
     try {
-      const response = await contactService.create(formData);
+      await contactService.create(formData);
       setSuccess(true);
       setFormData({
         name: '',
@@ -43,8 +43,9 @@ export default function ContactForm() {
         subject: '',
         message: '',
       });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại!');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại!');
     } finally {
       setLoading(false);
     }

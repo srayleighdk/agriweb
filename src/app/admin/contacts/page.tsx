@@ -33,8 +33,9 @@ export default function ContactsPage() {
       setLoading(true);
       const result = await contactService.getAll();
       setContacts(result.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Không thể tải danh sách liên hệ');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Không thể tải danh sách liên hệ');
     } finally {
       setLoading(false);
     }
@@ -50,8 +51,9 @@ export default function ContactsPage() {
       fetchContacts();
       setSelectedContact(null);
       setResponse('');
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Cập nhật thất bại');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Cập nhật thất bại');
     }
   };
 
@@ -61,8 +63,9 @@ export default function ContactsPage() {
       await contactService.delete(id);
       alert('Xóa thành công!');
       fetchContacts();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Xóa thất bại');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Xóa thất bại');
     }
   };
 

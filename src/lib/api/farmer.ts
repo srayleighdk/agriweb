@@ -52,7 +52,7 @@ class FarmerService {
   /**
    * Update farmer profile
    */
-  async updateProfile(data: any): Promise<FarmerProfile> {
+  async updateProfile(data: Partial<FarmerProfile>): Promise<FarmerProfile> {
     const response = await apiClient.put<FarmerProfile>('/auth/profile/farmer', data);
     return response.data;
   }

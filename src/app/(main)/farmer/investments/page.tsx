@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import FarmerNav from '@/components/layout/FarmerNav';
 import Toast from '@/components/ui/Toast';
@@ -28,22 +28,24 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+interface Stats {
+  totalInvestments: number;
+  activeInvestments: number;
+  completedInvestments: number;
+  totalFunding: number;
+}
+
 export default function FarmerInvestmentsPage() {
   const router = useRouter();
   const [investments, setInvestments] = useState<FarmerInvestment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [filter, setFilter] = useState<InvestmentStatus | 'ALL'>('ALL');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
-  useEffect(() => {
-    fetchInvestments();
-    fetchStats();
-  }, [filter]);
-
-  const fetchInvestments = async () => {
+  const fetchInvestments = useCallback(async () => {
     try {
       setLoading(true);
       const params = filter !== 'ALL' ? { status: filter } : {};
@@ -59,19 +61,24 @@ export default function FarmerInvestmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const data = await farmerInvestmentsService.getStats();
       setStats(data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchInvestments();
+    fetchStats();
+  }, [fetchInvestments, fetchStats]);
 
   const getStatusBadge = (status: InvestmentStatus) => {
-    const badges: Record<InvestmentStatus, { label: string; className: string; icon: any }> = {
+    const badges: Record<InvestmentStatus, { label: string; className: string; icon: typeof Clock }> = {
       PENDING: { label: 'Chờ duyệt', className: 'bg-yellow-500', icon: Clock },
       APPROVED: { label: 'Đã duyệt', className: 'bg-blue-500', icon: CheckCircle },
       REJECTED: { label: 'Từ chối', className: 'bg-red-500', icon: XCircle },
@@ -89,9 +96,9 @@ export default function FarmerInvestmentsPage() {
     );
   };
 
-  const getFundingPercentage = (investment: any) => {
-    const current = Number(investment.currentFunding || investment.currentAmount || 0);
-    const goal = Number(investment.fundingGoal || investment.requestedAmount || 0);
+  const getFundingPercentage = (investment: FarmerInvestment) => {
+    const current = Number(investment.currentFunding || 0);
+    const goal = Number(investment.fundingGoal || 0);
     if (goal === 0) return 0;
     return Math.min((current / goal) * 100, 100);
   };
@@ -109,9 +116,10 @@ export default function FarmerInvestmentsPage() {
         fetchInvestments();
         fetchStats();
       }, 1000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to delete investment:', error);
-      setToastMessage(error.response?.data?.message || 'Xóa dự án thất bại!');
+      const err = error as { response?: { data?: { message?: string } } };
+      setToastMessage(err.response?.data?.message || 'Xóa dự án thất bại!');
       setToastType('error');
       setShowToast(true);
     }
@@ -219,7 +227,7 @@ export default function FarmerInvestmentsPage() {
               <Button
                 key={status}
                 variant={filter === status ? 'default' : 'outline'}
-                onClick={() => setFilter(status as any)}
+                onClick={() => setFilter(status as InvestmentStatus | 'ALL')}
                 className={filter === status ? 'bg-green-600 hover:bg-green-700' : ''}
               >
                 {status === 'ALL'
@@ -305,10 +313,10 @@ export default function FarmerInvestmentsPage() {
                       <Progress value={getFundingPercentage(investment)} className="h-2" />
                       <div className="flex justify-between text-sm mt-2">
                         <span className="text-green-600 font-semibold">
-                          {((Number(investment.currentFunding || investment.currentAmount || 0)) / 1000000).toFixed(0)}M VNĐ
+                          {((Number(investment.currentFunding || 0)) / 1000000).toFixed(0)}M VNĐ
                         </span>
                         <span className="text-gray-600">
-                          / {((Number(investment.fundingGoal || investment.requestedAmount || 0)) / 1000000).toFixed(0)}M VNĐ
+                          / {((Number(investment.fundingGoal || 0)) / 1000000).toFixed(0)}M VNĐ
                         </span>
                       </div>
                     </div>
@@ -329,7 +337,7 @@ export default function FarmerInvestmentsPage() {
                           <Calendar className="h-4 w-4" />
                           <span>Thời gian</span>
                         </div>
-                        <p className="font-semibold">{Number(investment.returnPeriod || investment.duration || 0)} tháng</p>
+                        <p className="font-semibold">{Number(investment.returnPeriod || 0)} tháng</p>
                       </div>
                       <div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -337,7 +345,7 @@ export default function FarmerInvestmentsPage() {
                           <span>Đầu tư tối thiểu</span>
                         </div>
                         <p className="font-semibold">
-                          {((Number(investment.minInvestment || investment.minimumInvestment || 0)) / 1000000).toFixed(0)}M VNĐ
+                          {((Number(investment.minInvestment || 0)) / 1000000).toFixed(0)}M VNĐ
                         </p>
                       </div>
                       <div>

@@ -19,7 +19,7 @@ interface SearchResult {
 }
 
 // Fix for default marker icon in Leaflet with Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
@@ -38,6 +38,10 @@ export default function GoogleMapPicker({ onLocationSelect, selectedLat, selecte
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
+
+    const handleLocationSelect = onLocationSelect;
+    const initialLat = selectedLat;
+    const initialLng = selectedLng;
 
     // Initialize map centered on Hanoi, Vietnam
     const map = L.map(mapContainerRef.current).setView([21.0285, 105.8542], 13);
@@ -74,13 +78,13 @@ export default function GoogleMapPicker({ onLocationSelect, selectedLat, selecte
         .openPopup();
 
       markerRef.current = marker;
-      onLocationSelect(lat, lng);
+      handleLocationSelect(lat, lng);
     });
 
     mapRef.current = map;
 
     // If there's already a selected location, add marker
-    if (selectedLat && selectedLng) {
+    if (initialLat && initialLng) {
       const greenIcon = L.icon({
         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
@@ -90,12 +94,12 @@ export default function GoogleMapPicker({ onLocationSelect, selectedLat, selecte
         shadowSize: [41, 41]
       });
 
-      const marker = L.marker([selectedLat, selectedLng], { icon: greenIcon })
+      const marker = L.marker([initialLat, initialLng], { icon: greenIcon })
         .addTo(map)
-        .bindPopup(`<b>Vị trí đã chọn</b><br>Tọa độ: ${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`);
+        .bindPopup(`<b>Vị trí đã chọn</b><br>Tọa độ: ${initialLat.toFixed(6)}, ${initialLng.toFixed(6)}`);
 
       markerRef.current = marker;
-      map.setView([selectedLat, selectedLng], 13);
+      map.setView([initialLat, initialLng], 13);
     }
 
     // Cleanup
@@ -105,7 +109,7 @@ export default function GoogleMapPicker({ onLocationSelect, selectedLat, selecte
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [onLocationSelect, selectedLat, selectedLng]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;

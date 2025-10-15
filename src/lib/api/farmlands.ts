@@ -14,10 +14,11 @@ export interface Farmland {
   irrigationAccess: boolean;
   electricityAccess: boolean;
   landUseCertificateNo: string | null;
+  coordinates: string | null;
   createdAt: string;
   updatedAt: string;
-  crops?: any[];
-  livestock?: any[];
+  crops?: unknown[];
+  livestock?: unknown[];
 }
 
 export interface CreateFarmlandData {
@@ -31,6 +32,7 @@ export interface CreateFarmlandData {
   irrigationAccess?: boolean;
   electricityAccess?: boolean;
   landUseCertificateNo?: string;
+  coordinates?: string;
 }
 
 class FarmlandsService {

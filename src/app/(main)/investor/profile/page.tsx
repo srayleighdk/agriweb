@@ -20,22 +20,57 @@ import {
   Award,
   TrendingUp,
   Briefcase,
-  DollarSign,
   Building,
   FileText,
   Edit,
   Save,
   X,
-  BarChart3,
   Target,
 } from 'lucide-react';
 
+interface ProfileData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  province?: string;
+  commune?: string;
+  avatar?: string;
+  createdAt?: string;
+  investor?: {
+    investorType?: string;
+    isVerified?: boolean;
+    totalInvestments?: number;
+    activeInvestments?: number;
+    successfulInvestments?: number;
+    averageReturn?: number;
+    riskTolerance?: string;
+    totalInvested?: number;
+    totalReturned?: number;
+    portfolioValue?: number;
+    experience?: number;
+    netWorth?: number;
+    annualIncome?: number;
+    totalAvailableFunds?: number;
+    minInvestmentAmount?: number;
+    maxInvestmentAmount?: number;
+    preferredDuration?: string;
+    profession?: string;
+    companyName?: string;
+    industry?: string;
+    taxId?: string;
+    nationalId?: string;
+    dateOfBirth?: string;
+  };
+}
+
 export default function InvestorProfilePage() {
-  const { user, setAuth } = useAuthStore();
+  const { user: _user } = useAuthStore();
+  void _user; // Mark as intentionally unused
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -53,7 +88,7 @@ export default function InvestorProfilePage() {
     try {
       setLoading(true);
       const data = await authService.getProfile();
-      setProfileData(data);
+      setProfileData(data as ProfileData);
       setFormData({
         name: data.name || '',
         email: data.email || '',
@@ -323,7 +358,7 @@ export default function InvestorProfilePage() {
                       <div className="flex items-center gap-2 mt-2">
                         <Calendar className="h-4 w-4 text-gray-500" />
                         <span>
-                          {new Date(profileData?.createdAt).toLocaleDateString('vi-VN')}
+                          {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
                         </span>
                       </div>
                     </div>
