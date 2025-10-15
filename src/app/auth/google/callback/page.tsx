@@ -4,6 +4,7 @@ import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
+import { getAdminUrl } from '@/lib/utils/domain';
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -39,7 +40,6 @@ function GoogleCallbackContent() {
           } else if (user.role === Role.INVESTOR) {
             router.push('/investor/dashboard');
           } else if (user.role === Role.ADMIN) {
-            const { getAdminUrl } = await import('@/lib/utils/domain');
             window.location.href = getAdminUrl();
           } else {
             router.push('/');

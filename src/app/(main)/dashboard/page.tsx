@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { getAdminUrl } from '@/lib/utils/domain';
 
 export default function DashboardPage() {
   const { user, isAuthenticated } = useAuthStore();
@@ -22,7 +23,6 @@ export default function DashboardPage() {
       router.push('/investor/dashboard');
     } else if (user?.role === Role.ADMIN) {
       // Redirect to admin subdomain
-      const { getAdminUrl } = await import('@/lib/utils/domain');
       window.location.href = getAdminUrl();
     }
   }, [user, isAuthenticated, router]);

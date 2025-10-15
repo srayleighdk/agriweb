@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
 import { useRouter } from 'next/navigation';
+import { getAdminUrl } from '@/lib/utils/domain';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,7 +30,6 @@ export default function Navbar() {
     } else if (user?.role === Role.INVESTOR) {
       router.push('/investor/dashboard');
     } else if (user?.role === Role.ADMIN) {
-      const { getAdminUrl } = await import('@/lib/utils/domain');
       window.location.href = getAdminUrl();
     }
   };

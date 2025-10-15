@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
 import { Sprout, TrendingUp, Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
+import { getAdminUrl } from '@/lib/utils/domain';
 
 function LoginForm() {
   const router = useRouter();
@@ -57,7 +58,6 @@ function LoginForm() {
       // Then navigate to appropriate portal after a brief delay
       setTimeout(() => {
         if (response.user.role === Role.ADMIN) {
-          const { getAdminUrl } = await import('@/lib/utils/domain');
           window.location.href = getAdminUrl();
         } else if (response.user.role === Role.FARMER) {
           router.push('/farmer/dashboard');

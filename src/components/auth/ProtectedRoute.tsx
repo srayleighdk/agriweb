@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
+import { getAdminUrl } from '@/lib/utils/domain';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -47,9 +48,7 @@ export function ProtectedRoute({
         router.push('/investor/dashboard');
       } else if (user.role === Role.ADMIN) {
         // Redirect to admin subdomain
-        import('@/lib/utils/domain').then(({ getAdminUrl }) => {
-          window.location.href = getAdminUrl();
-        });
+        window.location.href = getAdminUrl();
       } else {
         router.push('/');
       }
