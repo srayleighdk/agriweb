@@ -57,8 +57,8 @@ function LoginForm() {
       // Then navigate to appropriate portal after a brief delay
       setTimeout(() => {
         if (response.user.role === Role.ADMIN) {
-          const port = window.location.port || '3001';
-          window.location.href = `http://admin.localhost:${port}`;
+          const { getAdminUrl } = await import('@/lib/utils/domain');
+          window.location.href = getAdminUrl();
         } else if (response.user.role === Role.FARMER) {
           router.push('/farmer/dashboard');
         } else if (response.user.role === Role.INVESTOR) {

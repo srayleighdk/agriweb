@@ -29,8 +29,8 @@ export default function Navbar() {
     } else if (user?.role === Role.INVESTOR) {
       router.push('/investor/dashboard');
     } else if (user?.role === Role.ADMIN) {
-      const port = window.location.port || '3001';
-      window.location.href = `http://admin.localhost:${port}`;
+      const { getAdminUrl } = await import('@/lib/utils/domain');
+      window.location.href = getAdminUrl();
     }
   };
 

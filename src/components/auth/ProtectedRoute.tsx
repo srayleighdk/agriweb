@@ -46,9 +46,10 @@ export function ProtectedRoute({
       } else if (user.role === Role.INVESTOR) {
         router.push('/investor/dashboard');
       } else if (user.role === Role.ADMIN) {
-        // Get current port for admin redirect
-        const port = typeof window !== 'undefined' ? window.location.port : '';
-        window.location.href = `http://admin.localhost${port ? ':' + port : ''}`;
+        // Redirect to admin subdomain
+        import('@/lib/utils/domain').then(({ getAdminUrl }) => {
+          window.location.href = getAdminUrl();
+        });
       } else {
         router.push('/');
       }

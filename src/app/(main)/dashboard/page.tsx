@@ -21,9 +21,9 @@ export default function DashboardPage() {
     } else if (user?.role === Role.INVESTOR) {
       router.push('/investor/dashboard');
     } else if (user?.role === Role.ADMIN) {
-      // Redirect to admin subdomain with current port
-      const port = window.location.port || '3001';
-      window.location.href = `http://admin.localhost:${port}`;
+      // Redirect to admin subdomain
+      const { getAdminUrl } = await import('@/lib/utils/domain');
+      window.location.href = getAdminUrl();
     }
   }, [user, isAuthenticated, router]);
 
