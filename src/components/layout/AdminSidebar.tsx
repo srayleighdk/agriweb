@@ -15,6 +15,8 @@ import {
   Beef,
   MessageSquare,
   Info,
+  Newspaper,
+  Tag,
 } from 'lucide-react';
 
 const menuItems = [
@@ -26,6 +28,8 @@ const menuItems = [
   { icon: MapPin, label: 'Vùng đất', href: '/admin/farmlands' },
   { icon: Leaf, label: 'Cây trồng', href: '/admin/plants' },
   { icon: Beef, label: 'Vật nuôi', href: '/admin/animals' },
+  { icon: Newspaper, label: 'Tin tức', href: '/admin/news' },
+  { icon: Tag, label: 'Danh mục tin tức', href: '/admin/news-categories' },
   { icon: Bell, label: 'Thông báo', href: '/admin/notifications' },
   { icon: MessageSquare, label: 'Liên hệ', href: '/admin/contacts' },
   { icon: Info, label: 'Thông tin liên hệ', href: '/admin/contact-information' },

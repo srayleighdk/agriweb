@@ -86,6 +86,9 @@ export default function Navbar() {
             <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition">
               Cách Hoạt Động
             </Link>
+            <Link href="/news" className="text-gray-600 hover:text-gray-900 transition">
+              Tin Tức
+            </Link>
             <Link href="#about" className="text-gray-600 hover:text-gray-900 transition">
               Về Chúng Tôi
             </Link>
@@ -179,6 +182,13 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Cách Hoạt Động
+            </Link>
+            <Link
+              href="/news"
+              className="block px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Tin Tức
             </Link>
             <Link
               href="#about"

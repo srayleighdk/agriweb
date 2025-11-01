@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { NewsSection } from '@/components/home/NewsSection';
 import {
   Sprout,
   TrendingUp,
@@ -59,22 +60,6 @@ export default function HomePage() {
                     Tìm Hiểu Thêm
                   </Button>
                 </Link>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200">
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">5K+</div>
-                  <div className="text-sm text-gray-600">Nông Dân Hoạt Động</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">2K+</div>
-                  <div className="text-sm text-gray-600">Nhà Đầu Tư</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">$10M+</div>
-                  <div className="text-sm text-gray-600">Đã Huy Động</div>
-                </div>
               </div>
             </div>
 
@@ -324,36 +309,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Impact Section */}
-      <section className="py-20 px-4 bg-green-600 text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Tác Động Của Chúng Tôi</h2>
-            <p className="text-xl text-green-100 max-w-2xl mx-auto">
-              Tạo sự khác biệt thực sự trong cộng đồng nông nghiệp trên toàn quốc
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-5xl font-bold mb-2">5,000+</div>
-              <div className="text-green-100">Nông Dân Được Trao Quyền</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold mb-2">2,000+</div>
-              <div className="text-green-100">Nhà Đầu Tư Hoạt Động</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold mb-2">$10M+</div>
-              <div className="text-green-100">Vốn Đã Triển Khai</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold mb-2">15K+</div>
-              <div className="text-green-100">Hecta Được Tài Trợ</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* News Section */}
+      <NewsSection />
 
       {/* Benefits Section */}
       <section id="about" className="py-20 px-4 bg-white">
