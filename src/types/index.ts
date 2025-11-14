@@ -3,6 +3,7 @@ export enum Role {
   FARMER = 'FARMER',
   INVESTOR = 'INVESTOR',
   ADMIN = 'ADMIN',
+  COMPANY = 'COMPANY',
 }
 
 export enum AuthProvider {
@@ -54,4 +55,44 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// Company types
+export enum CompanyType {
+  COMPANY = 'COMPANY',
+  COOPERATIVE = 'COOPERATIVE',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
+export enum CompanyVerificationLevel {
+  BASIC = 'BASIC',
+  DOCUMENTS = 'DOCUMENTS',
+  CERTIFIED = 'CERTIFIED',
+}
+
+export interface Company {
+  id: number;
+  userId: number;
+  name: string;
+  businessRegistrationNumber?: string | null;
+  address?: string | null;
+  representative?: string | null;
+  position?: string | null;
+  phone?: string | null;
+  fax?: string | null;
+  email?: string | null;
+  website?: string | null;
+  logo?: string | null;
+  exportProducts: string[];
+  exportLicense?: string | null;
+  exportMarkets: string[];
+  companyType: CompanyType;
+  establishedDate?: string | null;
+  employeeCount?: number | null;
+  annualRevenue?: number | null;
+  certifications: string[];
+  isVerified: boolean;
+  verificationLevel: CompanyVerificationLevel;
+  createdAt: string;
+  updatedAt: string;
 }

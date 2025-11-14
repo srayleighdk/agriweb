@@ -20,7 +20,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState<'farmer' | 'investor' | null>(null);
+  const [selectedUserType, setSelectedUserType] = useState<'farmer' | 'investor' | 'company' | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage] = useState('');
   const [toastType] = useState<'success' | 'error'>('success');
@@ -63,6 +63,8 @@ function LoginForm() {
           router.push('/farmer/dashboard');
         } else if (response.user.role === Role.INVESTOR) {
           router.push('/investor/dashboard');
+        } else if (response.user.role === Role.COMPANY) {
+          router.push('/company/dashboard');
         }
       }, 500);
     } catch (err: unknown) {
@@ -183,6 +185,20 @@ function LoginForm() {
                     </div>
                   </div>
                 </button>
+                <button
+                  onClick={() => setSelectedUserType('company')}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-orange-100 group-hover:bg-orange-500 flex items-center justify-center transition-colors">
+                      <Shield className="text-orange-600 group-hover:text-white" size={28} />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-gray-900 text-lg">Công ty / HTX</h3>
+                      <p className="text-sm text-gray-500">Xuất khẩu nông sản</p>
+                    </div>
+                  </div>
+                </button>
 
                 <div className="text-center pt-4">
                   <p className="text-sm text-gray-600">
@@ -203,10 +219,15 @@ function LoginForm() {
                         <Sprout className="text-green-600" size={20} />
                         <span className="text-sm font-medium">Đăng nhập với tư cách Nông dân</span>
                       </>
-                    ) : (
+                    ) : selectedUserType === 'investor' ? (
                       <>
                         <TrendingUp className="text-blue-600" size={20} />
                         <span className="text-sm font-medium">Đăng nhập với tư cách Nhà đầu tư</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="text-orange-600" size={20} />
+                        <span className="text-sm font-medium">Đăng nhập với tư cách Công ty / HTX</span>
                       </>
                     )}
                   </div>
@@ -306,7 +327,9 @@ function LoginForm() {
                   className={`w-full py-3 px-4 rounded-lg text-white font-semibold transition-colors ${
                     selectedUserType === 'farmer'
                       ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
+                      : selectedUserType === 'investor'
+                      ? 'bg-blue-600 hover:bg-blue-700'
+                      : 'bg-orange-600 hover:bg-orange-700'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}

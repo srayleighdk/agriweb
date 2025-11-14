@@ -22,7 +22,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState<'farmer' | 'investor' | null>(null);
+  const [selectedUserType, setSelectedUserType] = useState<'farmer' | 'investor' | 'company' | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
-        role: selectedUserType === 'farmer' ? Role.FARMER : Role.INVESTOR,
+        role: selectedUserType === 'farmer' ? Role.FARMER : selectedUserType === 'investor' ? Role.INVESTOR : Role.COMPANY,
       });
 
       // Show success toast
@@ -195,6 +195,20 @@ export default function RegisterPage() {
                     </div>
                   </div>
                 </button>
+                <button
+                  onClick={() => setSelectedUserType('company')}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-orange-100 group-hover:bg-orange-500 flex items-center justify-center transition-colors">
+                      <Shield className="text-orange-600 group-hover:text-white" size={28} />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-gray-900 text-lg">Công ty / HTX</h3>
+                      <p className="text-sm text-gray-500">Xuất khẩu nông sản</p>
+                    </div>
+                  </div>
+                </button>
 
                 <div className="text-center pt-4">
                   <p className="text-sm text-gray-600">
@@ -215,10 +229,15 @@ export default function RegisterPage() {
                         <Sprout className="text-green-600" size={20} />
                         <span className="text-sm font-medium">Đăng ký với tư cách Nông dân</span>
                       </>
-                    ) : (
+                    ) : selectedUserType === 'investor' ? (
                       <>
                         <TrendingUp className="text-blue-600" size={20} />
                         <span className="text-sm font-medium">Đăng ký với tư cách Nhà đầu tư</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="text-orange-600" size={20} />
+                        <span className="text-sm font-medium">Đăng ký với tư cách Công ty / HTX</span>
                       </>
                     )}
                   </div>
@@ -401,7 +420,9 @@ export default function RegisterPage() {
                   className={`w-full py-3 px-4 rounded-lg text-white font-semibold transition-colors ${
                     selectedUserType === 'farmer'
                       ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
+                      : selectedUserType === 'investor'
+                      ? 'bg-blue-600 hover:bg-blue-700'
+                      : 'bg-orange-600 hover:bg-orange-700'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {loading ? 'Đang đăng ký...' : 'Đăng ký'}
