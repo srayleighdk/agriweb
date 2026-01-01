@@ -1,9 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Save, X } from 'lucide-react';
-import { plantsService, Plant } from '@/lib/api/plants';
+import { plantsService, CreatePlantData } from '@/lib/api/plants';
+
+// Extended interface to include additional fields from backend
+interface PlantWithExtras {
+  vietnameseName: string;
+  englishName: string | null;
+  scientificName: string | null;
+  cropType: 'ANNUAL' | 'PERENNIAL';
+  category: string;
+  expectedLifespan: number | null;
+  growingPeriodDays: number | null;
+  commonNames?: string[];
+}
 
 export default function EditPlantPage() {
   const router = useRouter();
@@ -24,21 +36,17 @@ export default function EditPlantPage() {
     growingPeriodDays: '',
   });
 
-  useEffect(() => {
-    loadPlant();
-  }, [plantId]);
-
-  const loadPlant = async () => {
+  const loadPlant = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const plant = await plantsService.getPlantById(plantId);
+      const plant = await plantsService.getPlantById(plantId) as PlantWithExtras;
       
       setFormData({
         vietnameseName: plant.vietnameseName,
         englishName: plant.englishName || '',
         scientificName: plant.scientificName || '',
-        commonNames: (plant as any).commonNames ? (plant as any).commonNames.join(', ') : '',
+        commonNames: plant.commonNames ? plant.commonNames.join(', ') : '',
         cropType: plant.cropType,
         category: plant.category,
         expectedLifespan: plant.expectedLifespan?.toString() || '',
@@ -50,22 +58,22 @@ export default function EditPlantPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [plantId]);
+
+  useEffect(() => {
+    loadPlant();
+  }, [loadPlant]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data = {
+    const data: Record<string, unknown> = {
       vietnameseName: formData.vietnameseName,
-      englishName: formData.englishName || null,
-      scientificName: formData.scientificName || null,
+      cropType: formData.cropType as 'ANNUAL' | 'PERENNIAL',
+      category: formData.category,
       commonNames: formData.commonNames
         ? formData.commonNames.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
         : [],
-      cropType: formData.cropType as 'ANNUAL' | 'PERENNIAL',
-      category: formData.category,
-      expectedLifespan: formData.expectedLifespan ? parseInt(formData.expectedLifespan) : null,
-      growingPeriodDays: formData.growingPeriodDays ? parseInt(formData.growingPeriodDays) : null,
       seasonsPerYear: 1,
       optimalSoilTypes: [],
       plantingSeasons: [],
@@ -75,9 +83,15 @@ export default function EditPlantPage() {
       suitableProvinces: [],
     };
 
+    // Only add optional fields if they have values
+    if (formData.englishName) data.englishName = formData.englishName;
+    if (formData.scientificName) data.scientificName = formData.scientificName;
+    if (formData.expectedLifespan) data.expectedLifespan = parseInt(formData.expectedLifespan);
+    if (formData.growingPeriodDays) data.growingPeriodDays = parseInt(formData.growingPeriodDays);
+
     try {
       setSaving(true);
-      await plantsService.updatePlant(plantId, data);
+      await plantsService.updatePlant(plantId, data as unknown as Partial<CreatePlantData>);
       router.push('/admin/plants');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

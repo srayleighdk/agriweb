@@ -1,9 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Save, X } from 'lucide-react';
-import { animalsService, AnimalSpecies } from '@/lib/api/animals';
+import { animalsService, CreateAnimalData } from '@/lib/api/animals';
+
+// Extended interface to include additional fields from backend
+interface AnimalWithExtras {
+  vietnameseName: string;
+  englishName: string | null;
+  scientificName: string | null;
+  category: string;
+  averageLifespan: number | null;
+  commonNames?: string[];
+  temperament?: string;
+}
 
 export default function EditAnimalPage() {
   const router = useRouter();
@@ -23,24 +34,20 @@ export default function EditAnimalPage() {
     temperament: '',
   });
 
-  useEffect(() => {
-    loadAnimal();
-  }, [animalId]);
-
-  const loadAnimal = async () => {
+  const loadAnimal = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const animal = await animalsService.getAnimalById(animalId);
+      const animal = await animalsService.getAnimalById(animalId) as AnimalWithExtras;
       
       setFormData({
         vietnameseName: animal.vietnameseName,
         englishName: animal.englishName || '',
         scientificName: animal.scientificName || '',
         category: animal.category,
-        commonNames: (animal as any).commonNames ? (animal as any).commonNames.join(', ') : '',
+        commonNames: animal.commonNames ? animal.commonNames.join(', ') : '',
         averageLifespan: animal.averageLifespan?.toString() || '',
-        temperament: (animal as any).temperament || '',
+        temperament: animal.temperament || '',
       });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -48,27 +55,33 @@ export default function EditAnimalPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [animalId]);
+
+  useEffect(() => {
+    loadAnimal();
+  }, [loadAnimal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data = {
+    const data: Record<string, unknown> = {
       vietnameseName: formData.vietnameseName,
-      englishName: formData.englishName || null,
-      scientificName: formData.scientificName || null,
       category: formData.category,
       commonNames: formData.commonNames
         ? formData.commonNames.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
         : [],
-      averageLifespan: formData.averageLifespan ? parseInt(formData.averageLifespan) : null,
-      temperament: formData.temperament || null,
       exportPotential: false,
     };
 
+    // Only add optional fields if they have values
+    if (formData.englishName) data.englishName = formData.englishName;
+    if (formData.scientificName) data.scientificName = formData.scientificName;
+    if (formData.averageLifespan) data.averageLifespan = parseInt(formData.averageLifespan);
+    if (formData.temperament) data.temperament = formData.temperament;
+
     try {
       setSaving(true);
-      await animalsService.updateAnimal(animalId, data);
+      await animalsService.updateAnimal(animalId, data as unknown as Partial<CreateAnimalData>);
       router.push('/admin/animals');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

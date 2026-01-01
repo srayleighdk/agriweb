@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, X } from 'lucide-react';
-import { animalsService } from '@/lib/api/animals';
+import { animalsService, CreateAnimalData } from '@/lib/api/animals';
 
 export default function NewAnimalPage() {
   const router = useRouter();
@@ -21,22 +21,24 @@ export default function NewAnimalPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data = {
+    const data: Record<string, unknown> = {
       vietnameseName: formData.vietnameseName,
-      englishName: formData.englishName || null,
-      scientificName: formData.scientificName || null,
       category: formData.category,
       commonNames: formData.commonNames
         ? formData.commonNames.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
         : [],
-      averageLifespan: formData.averageLifespan ? parseInt(formData.averageLifespan) : null,
-      temperament: formData.temperament || null,
       exportPotential: false,
     };
 
+    // Only add optional fields if they have values
+    if (formData.englishName) data.englishName = formData.englishName;
+    if (formData.scientificName) data.scientificName = formData.scientificName;
+    if (formData.averageLifespan) data.averageLifespan = parseInt(formData.averageLifespan);
+    if (formData.temperament) data.temperament = formData.temperament;
+
     try {
       setSaving(true);
-      await animalsService.createAnimal(data);
+      await animalsService.createAnimal(data as unknown as CreateAnimalData);
       router.push('/admin/animals');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { newsService, News, NewsCategory } from '@/lib/api/news';
-import { Search, Plus, Edit, Trash2, Eye, EyeOff, Star, Newspaper } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Eye, Star, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 

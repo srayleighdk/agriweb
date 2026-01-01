@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { newsService, NewsCategory } from '@/lib/api/news';
-import { Plus, Edit, Trash2, Tag, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react';
 import { NewsCategoryModal } from '@/components/admin/NewsCategoryModal';
 
 export default function NewsCategoriesPage() {

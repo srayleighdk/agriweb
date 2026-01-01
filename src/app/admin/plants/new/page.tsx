@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, X } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import { CreatePlantData } from '@/lib/api/plants';
 
 export default function NewPlantPage() {
   const router = useRouter();
@@ -22,17 +23,13 @@ export default function NewPlantPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data = {
+    const data: Record<string, unknown> = {
       vietnameseName: formData.vietnameseName,
-      englishName: formData.englishName || null,
-      scientificName: formData.scientificName || null,
+      cropType: formData.cropType,
+      category: formData.category,
       commonNames: formData.commonNames
         ? formData.commonNames.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
         : [],
-      cropType: formData.cropType,
-      category: formData.category,
-      expectedLifespan: formData.expectedLifespan ? parseInt(formData.expectedLifespan) : null,
-      growingPeriodDays: formData.growingPeriodDays ? parseInt(formData.growingPeriodDays) : null,
       seasonsPerYear: 1,
       optimalSoilTypes: [],
       plantingSeasons: [],
@@ -42,9 +39,15 @@ export default function NewPlantPage() {
       suitableProvinces: [],
     };
 
+    // Only add optional fields if they have values
+    if (formData.englishName) data.englishName = formData.englishName;
+    if (formData.scientificName) data.scientificName = formData.scientificName;
+    if (formData.expectedLifespan) data.expectedLifespan = parseInt(formData.expectedLifespan);
+    if (formData.growingPeriodDays) data.growingPeriodDays = parseInt(formData.growingPeriodDays);
+
     try {
       setSaving(true);
-      await apiClient.post('/plants', data);
+      await apiClient.post('/plants', data as unknown as CreatePlantData);
       router.push('/admin/plants');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
