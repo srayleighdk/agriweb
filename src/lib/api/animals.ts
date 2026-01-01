@@ -30,8 +30,16 @@ export interface CreateAnimalData {
 
 class AnimalsService {
   async getAnimals(params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<AnimalSpecies>> {
-    const response = await apiClient.get<PaginatedResponse<AnimalSpecies>>('/animal-species', { params });
-    return response.data;
+    const response = await apiClient.get<AnimalSpecies[]>('/animal-species', { params });
+    // Backend returns array directly, not paginated. Transform to expected format
+    const animals = response.data;
+    return {
+      data: animals,
+      total: animals.length,
+      totalPages: 1,
+      page: 1,
+      limit: animals.length
+    };
   }
 
   async getAnimalById(id: number): Promise<AnimalSpecies> {

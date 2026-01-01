@@ -3,20 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, X } from 'lucide-react';
-import apiClient from '@/lib/api/client';
+import { animalsService } from '@/lib/api/animals';
 
-export default function NewPlantPage() {
+export default function NewAnimalPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     vietnameseName: '',
     englishName: '',
     scientificName: '',
+    category: 'RUMINANTS',
     commonNames: '',
-    cropType: 'ANNUAL',
-    category: '',
-    expectedLifespan: '',
-    growingPeriodDays: '',
+    averageLifespan: '',
+    temperament: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,29 +25,22 @@ export default function NewPlantPage() {
       vietnameseName: formData.vietnameseName,
       englishName: formData.englishName || null,
       scientificName: formData.scientificName || null,
+      category: formData.category,
       commonNames: formData.commonNames
         ? formData.commonNames.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
         : [],
-      cropType: formData.cropType,
-      category: formData.category,
-      expectedLifespan: formData.expectedLifespan ? parseInt(formData.expectedLifespan) : null,
-      growingPeriodDays: formData.growingPeriodDays ? parseInt(formData.growingPeriodDays) : null,
-      seasonsPerYear: 1,
-      optimalSoilTypes: [],
-      plantingSeasons: [],
-      harvestSeasons: [],
-      commonDiseases: [],
-      commonPests: [],
-      suitableProvinces: [],
+      averageLifespan: formData.averageLifespan ? parseInt(formData.averageLifespan) : null,
+      temperament: formData.temperament || null,
+      exportPotential: false,
     };
 
     try {
       setSaving(true);
-      await apiClient.post('/plants', data);
-      router.push('/admin/plants');
+      await animalsService.createAnimal(data);
+      router.push('/admin/animals');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      alert(error.response?.data?.message || 'Failed to create plant');
+      alert(error.response?.data?.message || 'Failed to create animal species');
     } finally {
       setSaving(false);
     }
@@ -58,13 +50,13 @@ export default function NewPlantPage() {
     <div className="p-8">
       <div className="mb-6">
         <button
-          onClick={() => router.push('/admin/plants')}
+          onClick={() => router.push('/admin/animals')}
           className="text-green-600 hover:text-green-700 mb-4 inline-flex items-center gap-2"
         >
-          ← Back to Plants
+          ← Back to Animals
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Plant</h1>
-        <p className="text-gray-600 mt-2">Add a new plant species to the catalog</p>
+        <h1 className="text-3xl font-bold text-gray-900">Add New Animal Species</h1>
+        <p className="text-gray-600 mt-2">Add a new animal species to the catalog</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
@@ -83,7 +75,7 @@ export default function NewPlantPage() {
                   value={formData.vietnameseName}
                   onChange={(e) => setFormData({ ...formData, vietnameseName: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Lúa"
+                  placeholder="e.g., Bò"
                 />
               </div>
 
@@ -94,7 +86,7 @@ export default function NewPlantPage() {
                   value={formData.englishName}
                   onChange={(e) => setFormData({ ...formData, englishName: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Rice"
+                  placeholder="e.g., Cow"
                 />
               </div>
 
@@ -105,37 +97,28 @@ export default function NewPlantPage() {
                   value={formData.scientificName}
                   onChange={(e) => setFormData({ ...formData, scientificName: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Oryza sativa"
+                  placeholder="e.g., Bos taurus"
                 />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Crop Type <span className="text-red-600">*</span>
-                </label>
-                <select
-                  required
-                  value={formData.cropType}
-                  onChange={(e) => setFormData({ ...formData, cropType: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="ANNUAL">Annual</option>
-                  <option value="PERENNIAL">Perennial</option>
-                </select>
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Category <span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   required
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Grains, Vegetables, Fruits"
-                />
+                >
+                  <option value="RUMINANTS">Ruminants</option>
+                  <option value="POULTRY">Poultry</option>
+                  <option value="SWINE">Swine</option>
+                  <option value="AQUACULTURE">Aquaculture</option>
+                  <option value="SMALL_ANIMALS">Small Animals</option>
+                  <option value="DRAFT_ANIMALS">Draft Animals</option>
+                  <option value="SPECIALTY">Specialty</option>
+                </select>
               </div>
 
               <div className="md:col-span-2">
@@ -147,7 +130,7 @@ export default function NewPlantPage() {
                   value={formData.commonNames}
                   onChange={(e) => setFormData({ ...formData, commonNames: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Lúa nước, Lúa chiêm"
+                  placeholder="e.g., Bò vàng, Bò ta"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Enter multiple names separated by commas
@@ -162,29 +145,26 @@ export default function NewPlantPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Expected Lifespan (months)
+                  Average Lifespan (years)
                 </label>
                 <input
                   type="number"
                   min="0"
-                  value={formData.expectedLifespan}
-                  onChange={(e) => setFormData({ ...formData, expectedLifespan: e.target.value })}
+                  value={formData.averageLifespan}
+                  onChange={(e) => setFormData({ ...formData, averageLifespan: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., 4"
+                  placeholder="e.g., 20"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Growing Period (days)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Temperament</label>
                 <input
-                  type="number"
-                  min="0"
-                  value={formData.growingPeriodDays}
-                  onChange={(e) => setFormData({ ...formData, growingPeriodDays: e.target.value })}
+                  type="text"
+                  value={formData.temperament}
+                  onChange={(e) => setFormData({ ...formData, temperament: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., 120"
+                  placeholder="e.g., Docile, Aggressive, Friendly"
                 />
               </div>
             </div>
@@ -198,11 +178,11 @@ export default function NewPlantPage() {
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
             >
               <Save size={18} />
-              {saving ? 'Saving...' : 'Save Plant'}
+              {saving ? 'Saving...' : 'Save Animal'}
             </button>
             <button
               type="button"
-              onClick={() => router.push('/admin/plants')}
+              onClick={() => router.push('/admin/animals')}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 flex items-center gap-2"
             >
               <X size={18} />

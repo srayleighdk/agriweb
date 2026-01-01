@@ -166,10 +166,13 @@ export default function AnimalsPage() {
                   )}
 
                   <div className="flex gap-2 pt-4 border-t">
-                    <button className="flex-1 px-3 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 flex items-center justify-center gap-2">
+                    <Link
+                      href={`/admin/animals/${animal.id}`}
+                      className="flex-1 px-3 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 flex items-center justify-center gap-2"
+                    >
                       <Edit size={16} />
                       Edit
-                    </button>
+                    </Link>
                     <button
                       onClick={() => handleDelete(animal.id, animal.vietnameseName)}
                       className="flex-1 px-3 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2"

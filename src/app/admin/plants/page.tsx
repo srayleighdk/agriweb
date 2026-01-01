@@ -29,13 +29,35 @@ export default function PlantsPage() {
         limit,
         search: search || undefined,
       });
-      setPlants(response.data || []);
-      setTotal(response.total || 0);
-      setTotalPages(response.totalPages || 0);
+      console.log('Plants API response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is array?:', Array.isArray(response));
+      console.log('response.data:', response.data);
+      console.log('response.data type:', typeof response.data);
+      
+      // Handle both paginated and direct array responses
+      if (Array.isArray(response)) {
+        // API returned array directly
+        setPlants(response);
+        setTotal(response.length);
+        setTotalPages(1);
+      } else if (response.data && Array.isArray(response.data)) {
+        // API returned paginated response
+        setPlants(response.data);
+        setTotal(response.total || 0);
+        setTotalPages(response.totalPages || 0);
+      } else {
+        console.error('Unexpected response format:', response);
+        setPlants([]);
+        setTotal(0);
+        setTotalPages(0);
+      }
     } catch (err: unknown) {
       console.error('Failed to load plants:', err);
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to load plants');
+      const error = err as { response?: { data?: { message?: string }; status?: number } };
+      const errorMessage = error.response?.data?.message || 'Failed to load plants';
+      const statusCode = error.response?.status;
+      setError(`${errorMessage}${statusCode ? ` (Status: ${statusCode})` : ''}`);
       setPlants([]);
     } finally {
       setLoading(false);
@@ -152,10 +174,13 @@ export default function PlantsPage() {
                   </div>
 
                   <div className="flex gap-2 pt-4 border-t">
-                    <button className="flex-1 px-3 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 flex items-center justify-center gap-2">
+                    <Link
+                      href={`/admin/plants/${plant.id}`}
+                      className="flex-1 px-3 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 flex items-center justify-center gap-2"
+                    >
                       <Edit size={16} />
                       Edit
-                    </button>
+                    </Link>
                     <button
                       onClick={() => handleDelete(plant.id, plant.vietnameseName)}
                       className="flex-1 px-3 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 flex items-center justify-center gap-2"

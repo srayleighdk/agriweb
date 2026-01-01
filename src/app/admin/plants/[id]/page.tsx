@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Save, X } from 'lucide-react';
-import apiClient from '@/lib/api/client';
+import { plantsService, Plant } from '@/lib/api/plants';
 
-export default function NewPlantPage() {
+export default function EditPlantPage() {
   const router = useRouter();
+  const params = useParams();
+  const plantId = parseInt(params.id as string);
+
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     vietnameseName: '',
     englishName: '',
@@ -19,6 +24,34 @@ export default function NewPlantPage() {
     growingPeriodDays: '',
   });
 
+  useEffect(() => {
+    loadPlant();
+  }, [plantId]);
+
+  const loadPlant = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const plant = await plantsService.getPlantById(plantId);
+      
+      setFormData({
+        vietnameseName: plant.vietnameseName,
+        englishName: plant.englishName || '',
+        scientificName: plant.scientificName || '',
+        commonNames: (plant as any).commonNames ? (plant as any).commonNames.join(', ') : '',
+        cropType: plant.cropType,
+        category: plant.category,
+        expectedLifespan: plant.expectedLifespan?.toString() || '',
+        growingPeriodDays: plant.growingPeriodDays?.toString() || '',
+      });
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load plant');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -29,7 +62,7 @@ export default function NewPlantPage() {
       commonNames: formData.commonNames
         ? formData.commonNames.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
         : [],
-      cropType: formData.cropType,
+      cropType: formData.cropType as 'ANNUAL' | 'PERENNIAL',
       category: formData.category,
       expectedLifespan: formData.expectedLifespan ? parseInt(formData.expectedLifespan) : null,
       growingPeriodDays: formData.growingPeriodDays ? parseInt(formData.growingPeriodDays) : null,
@@ -44,15 +77,42 @@ export default function NewPlantPage() {
 
     try {
       setSaving(true);
-      await apiClient.post('/plants', data);
+      await plantsService.updatePlant(plantId, data);
       router.push('/admin/plants');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      alert(error.response?.data?.message || 'Failed to create plant');
+      alert(error.response?.data?.message || 'Failed to update plant');
     } finally {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          <p className="ml-4 text-gray-600">Loading plant...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => router.push('/admin/plants')}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Back to Plants
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -63,8 +123,8 @@ export default function NewPlantPage() {
         >
           ← Back to Plants
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Plant</h1>
-        <p className="text-gray-600 mt-2">Add a new plant species to the catalog</p>
+        <h1 className="text-3xl font-bold text-gray-900">Edit Plant</h1>
+        <p className="text-gray-600 mt-2">Update plant information</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
@@ -198,7 +258,7 @@ export default function NewPlantPage() {
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
             >
               <Save size={18} />
-              {saving ? 'Saving...' : 'Save Plant'}
+              {saving ? 'Updating...' : 'Update Plant'}
             </button>
             <button
               type="button"
