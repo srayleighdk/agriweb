@@ -2,7 +2,6 @@ module.exports = {
 	  apps: [
 		      {
 			            name: 'agriweb',
-			            cwd: '/home/ec2-user/agriweb',
 			            script: 'node_modules/next/dist/bin/next',
 			            args: 'start -p 3001',
 			            instances: 1,
