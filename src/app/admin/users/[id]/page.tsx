@@ -2,10 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { User, Mail, Phone, MapPin, Shield, Calendar, Save, X } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Shield, Calendar, Save, X, CheckCircle } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { Role } from '@/types';
 import Toast from '@/components/ui/Toast';
+
+interface OwnedFarmland {
+  id: number;
+  name: string;
+  size: number;
+  farmlandType: string;
+  soilType: string | null;
+  address: string | null;
+  province: string | null;
+  commune: string | null;
+  organicCertified: boolean;
+  vietGapCertified: boolean;
+  globalGapCertified: boolean;
+  irrigationAccess: boolean;
+  electricityAccess: boolean;
+  createdAt: string;
+  ownerType: 'FARMER' | 'COMPANY';
+}
 
 interface UserDetail {
   id: number;
@@ -21,6 +39,16 @@ interface UserDetail {
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
+  company?: {
+    id: number;
+    name: string;
+    businessRegistrationNumber: string | null;
+    representative: string | null;
+    position: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null;
+  ownedFarmlands?: OwnedFarmland[];
 }
 
 export default function UserDetailPage() {
@@ -127,10 +155,28 @@ export default function UserDetailPage() {
         return 'bg-green-100 text-green-800';
       case Role.INVESTOR:
         return 'bg-blue-100 text-blue-800';
+      case Role.COMPANY:
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getFarmlandTypeBadge = (type: string) => {
+    switch (type) {
+      case 'CROP':
+        return 'bg-green-100 text-green-800';
+      case 'LIVESTOCK':
+        return 'bg-orange-100 text-orange-800';
+      case 'MIX':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const ownedFarmlands = user.ownedFarmlands || [];
+  const totalOwnedArea = ownedFarmlands.reduce((sum, farmland) => sum + farmland.size, 0);
 
   return (
     <div className="p-8">
@@ -190,7 +236,7 @@ export default function UserDetailPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Role</div>
           <div className="mt-2">
@@ -218,6 +264,14 @@ export default function UserDetailPage() {
               <span className="text-red-600">Not Verified</span>
             )}
           </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="text-sm text-gray-500">Owned Farmlands</div>
+          <div className="text-lg font-bold mt-1 text-gray-900">{ownedFarmlands.length}</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="text-sm text-gray-500">Total Area</div>
+          <div className="text-sm mt-1 text-gray-900">{totalOwnedArea.toFixed(2)} ha</div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Last Login</div>
@@ -353,6 +407,109 @@ export default function UserDetailPage() {
                 )}
               </div>
             </div>
+          </div>
+
+          {user.company && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Company Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                  <div className="text-gray-900">{user.company.name || '-'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Registration</label>
+                  <div className="text-gray-900">{user.company.businessRegistrationNumber || '-'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Representative</label>
+                  <div className="text-gray-900">{user.company.representative || '-'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
+                  <div className="text-gray-900">{user.company.position || '-'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Email</label>
+                  <div className="text-gray-900">{user.company.email || '-'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Phone</label>
+                  <div className="text-gray-900">{user.company.phone || '-'}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">User Mobile</label>
+                  <div className="text-gray-900">{user.phone || '-'}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4">Owned Farmlands</h3>
+            {ownedFarmlands.length === 0 ? (
+              <div className="text-gray-500">This user does not own any farmlands yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {ownedFarmlands.map((farmland) => (
+                  <div
+                    key={farmland.id}
+                    className="cursor-pointer border rounded-lg p-4 transition hover:bg-gray-50"
+                    onClick={() => router.push(`/admin/farmlands/${farmland.id}`)}
+                  >
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="font-semibold text-gray-900">{farmland.name}</h4>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getFarmlandTypeBadge(farmland.farmlandType)}`}>
+                            {farmland.farmlandType}
+                          </span>
+                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
+                            Owner: {farmland.ownerType}
+                          </span>
+                        </div>
+                        <div className="mt-2 space-y-1 text-sm text-gray-600">
+                          <div>Area: {farmland.size} ha</div>
+                          {(farmland.province || farmland.commune) && (
+                            <div>
+                              Location: {[farmland.commune, farmland.province].filter(Boolean).join(', ')}
+                            </div>
+                          )}
+                          {farmland.address && <div>Address: {farmland.address}</div>}
+                          {farmland.soilType && <div>Soil type: {farmland.soilType}</div>}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 text-xs">
+                        {farmland.organicCertified && (
+                          <span className="text-green-600 flex items-center gap-1">
+                            <CheckCircle size={12} /> Organic
+                          </span>
+                        )}
+                        {farmland.vietGapCertified && (
+                          <span className="text-blue-600 flex items-center gap-1">
+                            <CheckCircle size={12} /> VietGAP
+                          </span>
+                        )}
+                        {farmland.globalGapCertified && (
+                          <span className="text-purple-600 flex items-center gap-1">
+                            <CheckCircle size={12} /> GlobalGAP
+                          </span>
+                        )}
+                        {farmland.irrigationAccess && <span className="text-blue-600">Irrigation</span>}
+                        {farmland.electricityAccess && <span className="text-yellow-600">Electricity</span>}
+                        {!farmland.organicCertified &&
+                          !farmland.vietGapCertified &&
+                          !farmland.globalGapCertified &&
+                          !farmland.irrigationAccess &&
+                          !farmland.electricityAccess && (
+                            <span className="text-gray-400">No extra attributes</span>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="border-t pt-6">

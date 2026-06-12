@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, CheckCircle } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 
 interface Farmland {
   id: number;
-  farmerId: number;
+  farmerId: number | null;
+  companyId?: number | null;
   name: string;
   size: number;
   farmlandType: string;
@@ -28,12 +30,21 @@ interface Farmland {
       name: string | null;
       email: string;
     };
-  };
+  } | null;
+  company?: {
+    id: number;
+    name: string;
+    user?: {
+      name: string | null;
+      email: string;
+    } | null;
+  } | null;
   crops: Array<Record<string, unknown>>;
   livestock: Array<Record<string, unknown>>;
 }
 
 export default function FarmlandsPage() {
+  const router = useRouter();
   const [farmlands, setFarmlands] = useState<Farmland[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,6 +54,7 @@ export default function FarmlandsPage() {
   const [certifiedFilter, setCertifiedFilter] = useState<string>('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [totalArea, setTotalArea] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const limit = 10;
 
@@ -71,12 +83,14 @@ export default function FarmlandsPage() {
       const response = await apiClient.get('/admin/farmlands', { params });
       setFarmlands(response.data.data || []);
       setTotal(response.data.total || 0);
+      setTotalArea(response.data.totalArea || 0);
       setTotalPages(response.data.totalPages || 0);
     } catch (err: unknown) {
       console.error('Failed to load farmlands:', err);
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || 'Failed to load farmlands');
       setFarmlands([]);
+      setTotalArea(0);
     } finally {
       setLoading(false);
     }
@@ -94,6 +108,31 @@ export default function FarmlandsPage() {
       MIX: 'bg-blue-100 text-blue-800',
     };
     return styles[type] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getOwnerInfo = (farmland: Farmland) => {
+    if (farmland.farmer?.user) {
+      return {
+        label: farmland.farmer.user.name || 'Unknown Farmer',
+        email: farmland.farmer.user.email,
+        type: 'Farmer',
+      };
+    }
+
+    if (farmland.company) {
+      return {
+        label:
+          farmland.company.user?.name || farmland.company.name || 'Unknown Company',
+        email: farmland.company.user?.email || null,
+        type: 'Company',
+      };
+    }
+
+    return {
+      label: 'Unknown owner',
+      email: null,
+      type: null,
+    };
   };
 
   return (
@@ -170,7 +209,7 @@ export default function FarmlandsPage() {
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-sm text-gray-500">Total Area</div>
           <div className="text-2xl font-bold mt-1">
-            {farmlands.reduce((sum, f) => sum + f.size, 0).toFixed(2)} ha
+            {totalArea.toFixed(2)} ha
           </div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
@@ -213,7 +252,7 @@ export default function FarmlandsPage() {
                 <thead className="bg-gray-50 border-b">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmland</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
@@ -222,72 +261,80 @@ export default function FarmlandsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {farmlands.map((farmland) => (
-                    <tr key={farmland.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{farmland.name}</div>
-                        {farmland.landUseCertificateNo && (
-                          <div className="text-xs text-gray-500">Cert: {farmland.landUseCertificateNo}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{farmland.farmer.user.name || 'Unknown'}</div>
-                        <div className="text-xs text-gray-500">{farmland.farmer.user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{farmland.province || '-'}</div>
-                        {farmland.commune && (
-                          <div className="text-xs text-gray-500">{farmland.commune}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadge(farmland.farmlandType)}`}>
-                          {farmland.farmlandType}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{farmland.size} ha</div>
-                        {farmland.soilType && (
-                          <div className="text-xs text-gray-500">{farmland.soilType}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col gap-1">
-                          {farmland.organicCertified && (
-                            <span className="text-xs text-green-600 flex items-center gap-1">
-                              <CheckCircle size={12} /> Organic
-                            </span>
+                  {farmlands.map((farmland) => {
+                    const owner = getOwnerInfo(farmland);
+
+                    return (
+                      <tr
+                        key={farmland.id}
+                        className="cursor-pointer hover:bg-gray-50"
+                        onClick={() => router.push(`/admin/farmlands/${farmland.id}`)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{farmland.name}</div>
+                          {farmland.landUseCertificateNo && (
+                            <div className="text-xs text-gray-500">Cert: {farmland.landUseCertificateNo}</div>
                           )}
-                          {farmland.vietGapCertified && (
-                            <span className="text-xs text-blue-600 flex items-center gap-1">
-                              <CheckCircle size={12} /> VietGAP
-                            </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{owner.label}</div>
+                          <div className="text-xs text-gray-500">{owner.email || owner.type || '-'}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{farmland.province || '-'}</div>
+                          {farmland.commune && (
+                            <div className="text-xs text-gray-500">{farmland.commune}</div>
                           )}
-                          {farmland.globalGapCertified && (
-                            <span className="text-xs text-purple-600 flex items-center gap-1">
-                              <CheckCircle size={12} /> GlobalGAP
-                            </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadge(farmland.farmlandType)}`}>
+                            {farmland.farmlandType}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{farmland.size} ha</div>
+                          {farmland.soilType && (
+                            <div className="text-xs text-gray-500">{farmland.soilType}</div>
                           )}
-                          {!farmland.organicCertified && !farmland.vietGapCertified && !farmland.globalGapCertified && (
-                            <span className="text-xs text-gray-400">None</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col gap-1">
-                          {farmland.irrigationAccess && (
-                            <span className="text-xs text-blue-600">Irrigation</span>
-                          )}
-                          {farmland.electricityAccess && (
-                            <span className="text-xs text-yellow-600">Electricity</span>
-                          )}
-                          {!farmland.irrigationAccess && !farmland.electricityAccess && (
-                            <span className="text-xs text-gray-400">Basic</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col gap-1">
+                            {farmland.organicCertified && (
+                              <span className="text-xs text-green-600 flex items-center gap-1">
+                                <CheckCircle size={12} /> Organic
+                              </span>
+                            )}
+                            {farmland.vietGapCertified && (
+                              <span className="text-xs text-blue-600 flex items-center gap-1">
+                                <CheckCircle size={12} /> VietGAP
+                              </span>
+                            )}
+                            {farmland.globalGapCertified && (
+                              <span className="text-xs text-purple-600 flex items-center gap-1">
+                                <CheckCircle size={12} /> GlobalGAP
+                              </span>
+                            )}
+                            {!farmland.organicCertified && !farmland.vietGapCertified && !farmland.globalGapCertified && (
+                              <span className="text-xs text-gray-400">None</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col gap-1">
+                            {farmland.irrigationAccess && (
+                              <span className="text-xs text-blue-600">Irrigation</span>
+                            )}
+                            {farmland.electricityAccess && (
+                              <span className="text-xs text-yellow-600">Electricity</span>
+                            )}
+                            {!farmland.irrigationAccess && !farmland.electricityAccess && (
+                              <span className="text-xs text-gray-400">Basic</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

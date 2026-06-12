@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { usersService } from '@/lib/api/users';
 import { User, Role } from '@/types';
 import { Search, Edit } from 'lucide-react';
 import Link from 'next/link';
 
 export default function UsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -154,7 +156,11 @@ export default function UsersPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                    <tr
+                      key={user.id}
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => router.push(`/admin/users/${user.id}`)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0">
@@ -192,6 +198,7 @@ export default function UsersPage() {
                         <Link
                           href={`/admin/users/${user.id}`}
                           className="text-green-600 hover:text-green-900 mr-3 inline-block"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Edit size={18} />
                         </Link>
