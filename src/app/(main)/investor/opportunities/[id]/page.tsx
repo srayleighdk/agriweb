@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { investmentsService, Investment } from '@/lib/api/investments';
 import { investorService } from '@/lib/api/investor';
+import { contactRequestService, ContactRequest, ContactRequestStatus } from '@/lib/api/contact-request';
 import InvestorNav from '@/components/layout/InvestorNav';
 import {
   ArrowLeft,
@@ -17,7 +18,10 @@ import {
   Clock,
   CheckCircle,
   X,
-  Info
+  Info,
+  Phone,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import Link from 'next/link';
 import Toast from '@/components/ui/Toast';
@@ -44,12 +48,24 @@ export default function InvestmentDetailPage() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
+  // Contact request state
+  const [contactRequest, setContactRequest] = useState<ContactRequest | null>(null);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [showContactModal, setShowContactModal] = useState(false);
+
   const loadInvestmentDetail = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       const data = await investmentsService.getInvestmentById(investmentId);
       setInvestment(data);
+      try {
+        const cr = await contactRequestService.getForProject(investmentId);
+        setContactRequest(cr);
+      } catch {
+        setContactRequest(null);
+      }
     } catch (err: unknown) {
       console.error('Failed to load investment details:', err);
       const error = err as { response?: { data?: { message?: string } } };
@@ -86,6 +102,29 @@ export default function InvestmentDetailPage() {
     setDisplayAmount('');
     setInvestmentNotes('');
     setSubmitError('');
+  };
+
+  const handleContactSubmit = async () => {
+    if (!investment) return;
+    try {
+      setContactLoading(true);
+      const created = await contactRequestService.create({
+        farmerInvestmentId: investment.id,
+        message: contactMessage || undefined,
+      });
+      setContactRequest(created);
+      setShowContactModal(false);
+      setToastMessage('Đã gửi yêu cầu liên hệ. Admin sẽ thẩm định và phản hồi.');
+      setToastType('success');
+      setShowToast(true);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setToastMessage(error.response?.data?.message || 'Không thể gửi yêu cầu liên hệ');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setContactLoading(false);
+    }
   };
 
   const handleInvestmentSubmit = async (e: React.FormEvent) => {
@@ -392,12 +431,73 @@ export default function InvestmentDetailPage() {
 
             {/* Right Column - Investment Action */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Đầu tư ngay</h2>
+              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8 space-y-4">
+                <h2 className="text-xl font-bold text-gray-900">Liên hệ & Đầu tư</h2>
+
+                {/* Contact brokering card */}
+                <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                  <div className="flex items-center gap-2 font-semibold text-gray-900 mb-2">
+                    <Phone size={18} className="text-blue-600" />
+                    Liên hệ nông dân
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Contact thật (email/SĐT) bị ẩn với mọi tài khoản free. Bấm <b>Liên hệ</b> để admin thẩm định
+                    (và thu phí offline nếu cần) rồi mở khóa thông tin nông dân.
+                  </p>
+
+                  {investment.unlockedFarmerContact ? (
+                    <div className="bg-white rounded-lg border border-green-200 p-3 text-sm space-y-1">
+                      <div className="flex items-center gap-1 text-green-700 font-semibold mb-1">
+                        <Unlock size={16} /> Đã mở khóa
+                      </div>
+                      <div>Tên: {investment.unlockedFarmerContact.name || '—'}</div>
+                      <div>Email: {investment.unlockedFarmerContact.email}</div>
+                      <div>SĐT: {investment.unlockedFarmerContact.phone || 'Chưa cập nhật'}</div>
+                      <div>
+                        Địa chỉ:{' '}
+                        {[
+                          investment.unlockedFarmerContact.address,
+                          investment.unlockedFarmerContact.commune,
+                          investment.unlockedFarmerContact.province,
+                        ]
+                          .filter(Boolean)
+                          .join(', ') || '—'}
+                      </div>
+                    </div>
+                  ) : contactRequest?.status === ContactRequestStatus.PENDING ? (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 flex items-start gap-2">
+                      <Lock size={16} className="mt-0.5" />
+                      Đã gửi yêu cầu — đang chờ admin duyệt
+                    </div>
+                  ) : contactRequest?.status === ContactRequestStatus.REJECTED ? (
+                    <div className="space-y-2">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+                        Yêu cầu bị từ chối. Bạn có thể gửi lại.
+                      </div>
+                      <button
+                        onClick={() => setShowContactModal(true)}
+                        className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 flex items-center justify-center gap-2"
+                      >
+                        <Phone size={18} />
+                        Gửi lại yêu cầu liên hệ
+                      </button>
+                    </div>
+                  ) : investment.status === 'APPROVED' ? (
+                    <button
+                      onClick={() => setShowContactModal(true)}
+                      className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 flex items-center justify-center gap-2"
+                    >
+                      <Phone size={18} />
+                      Liên hệ
+                    </button>
+                  ) : (
+                    <div className="text-sm text-gray-500">Dự án chưa mở để liên hệ.</div>
+                  )}
+                </div>
 
                 {investment.status === 'APPROVED' ? (
                   <>
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-4 border border-blue-100">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-600">Số tiền cần</span>
                         <span className="text-lg font-bold text-blue-600">
@@ -412,13 +512,13 @@ export default function InvestmentDetailPage() {
 
                     <button
                       onClick={handleInvestClick}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                     >
                       <DollarSign size={24} />
                       Đầu tư ngay
                     </button>
 
-                    <div className="mt-4 flex items-start gap-2 text-gray-600 text-sm">
+                    <div className="flex items-start gap-2 text-gray-600 text-sm">
                       <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
                       <p>Vui lòng đọc kỹ thông tin và đánh giá rủi ro trước khi đầu tư.</p>
                     </div>
@@ -434,6 +534,38 @@ export default function InvestmentDetailPage() {
           </div>
         </div>
       </div>
+
+      
+      {/* Contact Request Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 backdrop-blur-md bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Yêu cầu liên hệ</h3>
+              <button onClick={() => setShowContactModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={22} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">
+              Admin sẽ nhận yêu cầu, liên hệ bạn và nông dân để thẩm định. Contact thật chỉ mở sau khi được duyệt.
+            </p>
+            <textarea
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              rows={4}
+              placeholder="Bạn muốn đầu tư thế nào? (tuỳ chọn)"
+              className="w-full border rounded-xl p-3 mb-4"
+            />
+            <button
+              onClick={handleContactSubmit}
+              disabled={contactLoading}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
+            >
+              {contactLoading ? 'Đang gửi...' : 'Gửi yêu cầu liên hệ'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Investment Modal */}
       {showInvestModal && (

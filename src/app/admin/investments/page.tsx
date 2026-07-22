@@ -9,7 +9,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 type InvestmentView = 'farmer' | 'investor';
 
-export default function InvestmentsPage() {
+export default function InvestmentsPage() { // contact-broker plan: admin can create projects
   const router = useRouter();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [investorInvestments, setInvestorInvestments] = useState<InvestorInvestment[]>([]);
@@ -164,6 +164,15 @@ export default function InvestmentsPage() {
 
   return (
     <div className="p-8">
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => router.push('/admin/investments/new')}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        >
+          + Tạo dự án cho nông dân
+        </button>
+      </div>
+
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Quản lý Đầu tư</h1>
         <p className="text-gray-600 mt-2">Xem xét và quản lý các yêu cầu đầu tư</p>

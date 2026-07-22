@@ -47,7 +47,30 @@ export interface Investment {
     size: number;
     farmlandType: string;
     address: string | null;
+    province?: string | null;
   };
+  images?: string[];
+  documents?: string[];
+  fundingDeadline?: string | null;
+  repaymentTerms?: string | null;
+  riskFactors?: string[];
+  collateral?: string | null;
+  insurance?: string | null;
+  businessPlan?: string | null;
+  financialProjection?: string | null;
+  createdByAdminId?: number | null;
+  contactRequestStatus?: string | null;
+  contactRequestId?: number | null;
+  unlockedFarmerContact?: {
+    name: string | null;
+    email: string;
+    phone: string | null;
+    province: string | null;
+    commune: string | null;
+    address: string | null;
+    contactRequestId: number;
+    unlockedAt?: string | null;
+  } | null;
 }
 
 export interface InvestorInvestment {
@@ -155,6 +178,14 @@ class InvestmentsService {
   }
 
   /**
+   * Get public investment project details (no auth required)
+   */
+  async getPublicInvestmentById(id: number): Promise<Investment> {
+    const response = await apiClient.get<Investment>(`/farmer-investments/public/${id}`);
+    return response.data;
+  }
+
+  /**
    * Get investment by ID (admin only)
    */
   async getInvestmentByIdAdmin(id: number): Promise<Investment> {
@@ -203,6 +234,22 @@ class InvestmentsService {
    */
   async getInvestorInvestmentById(id: number): Promise<InvestorInvestment> {
     const response = await apiClient.get<InvestorInvestment>(`/admin/investor-investments/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Admin creates a project for a farmer
+   */
+  async createInvestmentAdmin(data: Record<string, unknown>): Promise<Investment> {
+    const response = await apiClient.post<Investment>('/farmer-investments/admin', data);
+    return response.data;
+  }
+
+  /**
+   * Admin updates a farmer investment project
+   */
+  async updateInvestmentAdmin(id: number, data: Record<string, unknown>): Promise<Investment> {
+    const response = await apiClient.patch<Investment>(`/farmer-investments/admin/${id}`, data);
     return response.data;
   }
 }

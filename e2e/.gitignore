@@ -1,0 +1,3 @@
+.auth/
+.env.test
+.api-fixture.json

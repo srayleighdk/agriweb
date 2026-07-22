@@ -6,7 +6,15 @@
     "dev": "next dev --turbopack -p 3001",
     "build": "next build --turbopack",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test",
+    "test:e2e:api": "playwright test --project=api",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:admin": "playwright test --project=admin",
+    "test:e2e:crud": "playwright test --grep @crud",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -41,6 +49,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.20",

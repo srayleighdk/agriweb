@@ -17,6 +17,7 @@ import {
   Info,
   Newspaper,
   Tag,
+  Handshake,
 } from 'lucide-react';
 
 const menuItems = [
@@ -25,6 +26,7 @@ const menuItems = [
   { icon: Sprout, label: 'Nông dân', href: '/admin/farmers' },
   { icon: DollarSign, label: 'Nhà đầu tư', href: '/admin/investors' },
   { icon: FileText, label: 'Đầu tư', href: '/admin/investments' },
+  { icon: Handshake, label: 'Yêu cầu liên hệ', href: '/admin/contact-requests' },
   { icon: MapPin, label: 'Vùng đất', href: '/admin/farmlands' },
   { icon: Leaf, label: 'Cây trồng', href: '/admin/plants' },
   { icon: Beef, label: 'Vật nuôi', href: '/admin/animals' },
