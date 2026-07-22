@@ -1,0 +1,124 @@
+name: Deploy
+
+# Merging to main builds and stages the release; the `deploy` job then waits on
+# the `production` environment's required-reviewer rule until a human approves
+# the swap. Nothing reaches production unattended.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or SHA to deploy'
+        required: false
+        default: main
+
+concurrency:
+  group: deploy-agriweb
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  build:
+    name: Build release
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.rev.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Resolve revision
+        id: rev
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx tsc --noEmit
+
+      # NEXT_PUBLIC_* are inlined into the client bundle at build time, so the
+      # build must run with the real production value -- there is no way to
+      # substitute it later on the server.
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          test -n "$NEXT_PUBLIC_API_URL" || {
+            echo "::error::NEXT_PUBLIC_API_URL is empty; the bundle would fall back"
+            echo "::error::to http://localhost:3000/api and the site would not work."
+            exit 1
+          }
+          npm run build
+
+      # .next/cache is build-time only and is the bulk of the directory; the
+      # server needs .next, public, the manifests and next.config.ts to run
+      # `next start`.
+      - name: Package release
+        run: |
+          mkdir -p release
+          cp -r .next public package.json package-lock.json next.config.ts release/
+          rm -rf release/.next/cache
+          tar -czf release.tar.gz -C release .
+          echo "packaged $(du -h release.tar.gz | cut -f1)"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: agriweb-release-${{ steps.rev.outputs.sha }}
+          path: release.tar.gz
+          retention-days: 7
+
+  deploy:
+    name: Deploy to production
+    needs: build
+    runs-on: ubuntu-latest
+    # Required-reviewer gate lives here: the job is held until approved.
+    environment:
+      name: production
+      url: https://agrinvest.vn
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: agriweb-release-${{ needs.build.outputs.sha }}
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          install -m 600 /dev/null ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # The key is pinned to a forced command on the server; these two verbs are
+      # all it can do. This repository is public, so the key must not be
+      # equivalent to shell access.
+      - name: Stage artifact on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "upload agriweb ${{ needs.build.outputs.sha }}" < release.tar.gz
+
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "deploy agriweb ${{ needs.build.outputs.sha }}"
+
+      - name: Verify site is serving
+        run: |
+          for host in https://agrinvest.vn https://admin.agrinvest.vn; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$host/")
+            echo "$host -> HTTP $code"
+            [ "$code" = 200 ] || { echo "::error::$host returned $code"; exit 1; }
+          done
+
+      - name: Remove deploy key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
