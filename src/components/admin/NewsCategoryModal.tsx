@@ -62,6 +62,7 @@ export function NewsCategoryModal({ category, onClose, onSuccess }: NewsCategory
             <input
               type="text"
               required
+              data-testid="news-category-name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -174,6 +175,7 @@ export function NewsCategoryModal({ category, onClose, onSuccess }: NewsCategory
             <button
               type="submit"
               disabled={loading}
+              data-testid="news-category-save"
               className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
               {loading ? 'Đang lưu...' : category ? 'Cập nhật' : 'Tạo mới'}
@@ -181,6 +183,7 @@ export function NewsCategoryModal({ category, onClose, onSuccess }: NewsCategory
             <button
               type="button"
               onClick={onClose}
+              data-testid="news-category-cancel"
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             >
               Hủy

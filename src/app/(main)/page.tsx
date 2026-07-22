@@ -6,6 +6,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { NewsSection } from '@/components/home/NewsSection';
+import { InvestmentProjectsSection } from '@/components/home/InvestmentProjectsSection';
 import {
   Sprout,
   TrendingUp,
@@ -311,6 +312,9 @@ export default function HomePage() {
 
       {/* News Section */}
       <NewsSection />
+
+      {/* Investment Projects for investors (below News) */}
+      <InvestmentProjectsSection />
 
       {/* Benefits Section */}
       <section id="about" className="py-20 px-4 bg-white">

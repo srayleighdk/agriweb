@@ -76,6 +76,8 @@ export default function NewsCategoriesPage() {
           <p className="text-gray-600 mt-2">Quản lý danh mục cho tin tức</p>
         </div>
         <button
+          type="button"
+          data-testid="news-category-add"
           onClick={() => setShowModal(true)}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
         >

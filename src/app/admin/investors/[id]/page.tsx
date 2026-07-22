@@ -42,6 +42,8 @@ interface InvestorDetail {
   incomeProof: string | null;
   businessRegistration: string | null;
   verificationDocument: string | null;
+  accessTier?: 'FREE' | 'PAID';
+  paidUntil?: string | null;
   createdAt: string;
   user: {
     id: number;
@@ -97,6 +99,31 @@ export default function InvestorDetailPage() {
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       alert(error.response?.data?.message || 'Failed to update verification status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAccessTierChange = async (accessTier: 'FREE' | 'PAID') => {
+    const label = accessTier === 'PAID' ? 'PAID (đã thanh toán)' : 'FREE';
+    if (!confirm(`Đặt gói truy cập nhà đầu tư thành ${label}?`)) return;
+
+    try {
+      setUpdating(true);
+      const payload: Record<string, unknown> = { accessTier };
+      if (accessTier === 'PAID') {
+        // default 1 year paid window; admin can refine later
+        const d = new Date();
+        d.setFullYear(d.getFullYear() + 1);
+        payload.paidUntil = d.toISOString();
+      } else {
+        payload.paidUntil = null;
+      }
+      await apiClient.patch(`/admin/investors/${investorId}`, payload);
+      await loadInvestor();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Không thể cập nhật gói truy cập');
     } finally {
       setUpdating(false);
     }
@@ -488,6 +515,44 @@ export default function InvestorDetailPage() {
           {/* Verification Tab */}
           {activeTab === 'verification' && (
             <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Gói truy cập liên hệ (FREE / PAID)</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Theo Thoại: free xem dự án nhưng contact ẩn; paid/admin duyệt mới mở contact.
+                  Admin đánh dấu PAID sau khi nhà đầu tư thanh toán offline.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    investor.accessTier === 'PAID'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {investor.accessTier || 'FREE'}
+                  </span>
+                  {investor.paidUntil && (
+                    <span className="text-sm text-gray-600">
+                      Hết hạn: {new Date(investor.paidUntil).toLocaleDateString('vi-VN')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={updating || investor.accessTier === 'PAID'}
+                    onClick={() => handleAccessTierChange('PAID')}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    Đặt PAID (1 năm)
+                  </button>
+                  <button
+                    disabled={updating || investor.accessTier === 'FREE' || !investor.accessTier}
+                    onClick={() => handleAccessTierChange('FREE')}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Đặt FREE
+                  </button>
+                </div>
+              </div>
+
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-4">Verification Status</h3>
                 <div className="flex items-center gap-4">

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LayoutDashboard, Search, PieChart, User, LogOut, Menu, X, Home } from 'lucide-react';
+import { LayoutDashboard, Search, PieChart, User, LogOut, Menu, X, Home, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import NotificationDropdown from '@/components/notifications/NotificationDropdown';
@@ -27,6 +27,7 @@ export default function InvestorNav() {
   const navItems = [
     { href: '/investor/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/investor/opportunities', label: 'Cơ hội', icon: Search },
+    { href: '/investor/contacts', label: 'Liên hệ', icon: Phone },
     { href: '/investor/portfolio', label: 'Danh mục', icon: PieChart },
   ];
 

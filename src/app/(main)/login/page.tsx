@@ -52,6 +52,21 @@ function LoginForm() {
         refresh_token: response.refresh_token,
       });
 
+      // Support return URL from project CTAs, e.g. /login?next=/projects/1
+      const next = searchParams.get('next');
+      const safeNext =
+        next && next.startsWith('/') && !next.startsWith('//') ? next : null;
+
+      if (safeNext) {
+        if (response.user.role === Role.ADMIN) {
+          // Admin portal lives on admin host; keep simple redirect
+          window.location.href = getAdminUrl();
+        } else {
+          router.push(safeNext);
+        }
+        return;
+      }
+
       // Redirect to home page first
       router.push('/');
 

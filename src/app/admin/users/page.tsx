@@ -102,9 +102,10 @@ export default function UsersPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">All Roles</option>
+              <option value={Role.ADMIN}>Admin</option>
               <option value={Role.FARMER}>Farmer</option>
               <option value={Role.INVESTOR}>Investor</option>
-              <option value={Role.ADMIN}>Admin</option>
+              <option value={Role.COMPANY}>Company</option>
             </select>
           </div>
         </div>

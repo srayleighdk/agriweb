@@ -7,6 +7,7 @@ import {
   CheckCircle, XCircle, Clock, FileText, Target, BarChart3
 } from 'lucide-react';
 import { investmentsService, Investment, InvestmentStatus } from '@/lib/api/investments';
+import { getImageUrl } from '@/lib/api/client';
 import Toast from '@/components/ui/Toast';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -44,7 +45,7 @@ export default function InvestmentDetailPage() {
     try {
       setLoading(true);
       setError('');
-      const data = await investmentsService.getInvestmentById(parseInt(investmentId));
+      const data = await investmentsService.getInvestmentByIdAdmin(parseInt(investmentId));
       setInvestment(data);
     } catch (err: unknown) {
       console.error('Failed to load investment:', err);
@@ -195,8 +196,17 @@ export default function InvestmentDetailPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{investment.title}</h1>
             <p className="text-gray-600 mt-2">ID: #{investment.id}</p>
+            {investment.createdByAdminId ? (
+              <p className="text-xs text-blue-700 mt-1">Tạo bởi admin #{investment.createdByAdminId}</p>
+            ) : null}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => router.push(`/admin/investments/${investment.id}/edit`)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              Sửa dự án
+            </button>
             {investment.status === InvestmentStatus.PENDING && (
               <>
                 <button
@@ -280,6 +290,31 @@ export default function InvestmentDetailPage() {
             </h2>
             <p className="text-gray-700 whitespace-pre-wrap">{investment.description || 'Không có mô tả'}</p>
           </div>
+
+          {/* Project Images */}
+          {investment.images && investment.images.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4">Hình ảnh dự án</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {investment.images.map((img, idx) => (
+                  <a
+                    key={`${img}-${idx}`}
+                    href={getImageUrl(img)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block aspect-video rounded-lg overflow-hidden border bg-gray-50"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getImageUrl(img)}
+                      alt={`Ảnh dự án ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Funding Progress */}
           <div className="bg-white rounded-lg shadow p-6">
@@ -411,12 +446,12 @@ export default function InvestmentDetailPage() {
                     <div className="text-sm text-gray-500">{investment.farmer.user?.email}</div>
                   </div>
                 </div>
-                {investment.farmer.user?.phone && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                    <div className="text-gray-900">{investment.farmer.user.phone}</div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                  <div className="text-gray-900">
+                    {investment.farmer.user?.phone || 'Chưa cập nhật trong tài khoản'}
                   </div>
-                )}
+                </div>
                 {investment.farmer.user?.province && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố</label>
