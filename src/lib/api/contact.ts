@@ -6,6 +6,7 @@ export interface CreateContactDto {
   phone?: string;
   subject: string;
   message: string;
+  farmerInvestmentId?: number;
 }
 
 export enum ContactStatus {
@@ -26,6 +27,7 @@ export interface Contact {
   assignedTo?: number;
   response?: string;
   respondedAt?: string;
+  farmerInvestmentId?: number;
   createdAt: string;
   updatedAt: string;
 }

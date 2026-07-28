@@ -13,8 +13,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Eye, EyeOff, Mail, Phone, Calendar } from 'lucide-react';
+import { Trash2, Eye, EyeOff, Mail, Phone, Calendar, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -112,6 +113,15 @@ export default function ContactsPage() {
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <CardTitle className="text-xl mb-2">{contact.subject}</CardTitle>
+                  {contact.farmerInvestmentId && (
+                    <Link
+                      href={`/admin/investments/${contact.farmerInvestmentId}`}
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mb-2"
+                    >
+                      Về dự án #{contact.farmerInvestmentId}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
                   <div className="flex gap-4 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <Mail className="h-4 w-4" />

@@ -15,6 +15,7 @@ import {
 } from '@/lib/api/contact-request';
 import { investorService } from '@/lib/api/investor';
 import { farmerService } from '@/lib/api/farmer';
+import ProjectInquiryModal from '@/components/projects/ProjectInquiryModal';
 import { getImageUrl } from '@/lib/api/client';
 import { useAuthStore } from '@/store/auth';
 import { Role } from '@/types';
@@ -26,6 +27,7 @@ import {
   Lock,
   Map,
   MapPin,
+  MessageCircle,
   Phone,
   Shield,
   Target,
@@ -88,6 +90,9 @@ export default function PublicProjectDetailPage() {
   const [contactMessage, setContactMessage] = useState('');
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactLoading, setContactLoading] = useState(false);
+
+  // Guest inquiry state (no login required, sent straight to admin)
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
 
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState('');
@@ -469,6 +474,13 @@ export default function PublicProjectDetailPage() {
                     >
                       Đăng ký
                     </Link>
+                    <button
+                      onClick={() => setShowInquiryModal(true)}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border border-blue-200 text-blue-700 rounded-xl font-semibold hover:bg-blue-50"
+                    >
+                      <MessageCircle size={16} />
+                      Liên hệ về dự án này
+                    </button>
                   </div>
                 )}
 
@@ -648,6 +660,17 @@ export default function PublicProjectDetailPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {project && (
+        <ProjectInquiryModal
+          open={showInquiryModal}
+          onClose={() => setShowInquiryModal(false)}
+          projectId={project.id}
+          projectTitle={project.title}
+          onSuccess={(message) => setToast({ message, type: 'success' })}
+          onError={(message) => setToast({ message, type: 'error' })}
+        />
       )}
 
       {toast && (
