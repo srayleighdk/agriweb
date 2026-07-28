@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { investmentsService, Investment, InvestorInvestment, InvestmentStatus } from '@/lib/api/investments';
-import { Search, CheckCircle, XCircle } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Pencil, Play, RotateCcw, Trash2 } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -94,22 +94,65 @@ export default function InvestmentsPage() { // contact-broker plan: admin can cr
     }
   };
 
-  const handleApprove = async (id: number) => {
-    setConfirmDialog({
-      open: true,
+  const statusChangeCopy: Record<
+    InvestmentStatus,
+    { title: string; description: string; variant: 'danger' | 'warning' | 'info'; success: string }
+  > = {
+    [InvestmentStatus.PENDING]: {
+      title: 'Đặt lại chờ xử lý',
+      description: 'Bạn có chắc chắn muốn đặt lại trạng thái chờ xử lý không?',
+      variant: 'info',
+      success: 'Đã đặt lại trạng thái chờ xử lý',
+    },
+    [InvestmentStatus.APPROVED]: {
       title: 'Phê duyệt yêu cầu đầu tư',
       description: 'Bạn có chắc chắn muốn phê duyệt yêu cầu đầu tư này không?',
       variant: 'info',
+      success: 'Phê duyệt thành công',
+    },
+    [InvestmentStatus.REJECTED]: {
+      title: 'Từ chối yêu cầu đầu tư',
+      description: 'Bạn có chắc chắn muốn từ chối yêu cầu đầu tư này không? Hành động này không thể hoàn tác.',
+      variant: 'danger',
+      success: 'Đã từ chối yêu cầu đầu tư',
+    },
+    [InvestmentStatus.ACTIVE]: {
+      title: 'Kích hoạt đầu tư',
+      description: 'Bạn có chắc chắn muốn kích hoạt đầu tư này không?',
+      variant: 'info',
+      success: 'Đã kích hoạt đầu tư',
+    },
+    [InvestmentStatus.COMPLETED]: {
+      title: 'Hoàn thành đầu tư',
+      description: 'Bạn có chắc chắn muốn đánh dấu đầu tư này là hoàn thành không?',
+      variant: 'info',
+      success: 'Đã đánh dấu hoàn thành',
+    },
+    [InvestmentStatus.CANCELLED]: {
+      title: 'Hủy bỏ đầu tư',
+      description: 'Bạn có chắc chắn muốn hủy bỏ đầu tư này không?',
+      variant: 'danger',
+      success: 'Đã hủy bỏ đầu tư',
+    },
+  };
+
+  const handleStatusChange = (id: number, status: InvestmentStatus) => {
+    const copy = statusChangeCopy[status];
+    setConfirmDialog({
+      open: true,
+      title: copy.title,
+      description: copy.description,
+      variant: copy.variant,
       onConfirm: async () => {
         try {
-          await investmentsService.updateInvestmentStatus(id, InvestmentStatus.APPROVED);
+          await investmentsService.updateInvestmentStatus(id, status);
           await loadInvestments();
-          setToastMessage('Phê duyệt thành công');
+          setToastMessage(copy.success);
           setToastType('success');
           setShowToast(true);
         } catch (err: unknown) {
           const error = err as { response?: { data?: { message?: string } } };
-          setToastMessage(error.response?.data?.message || 'Không thể phê duyệt');
+          setToastMessage(error.response?.data?.message || 'Không thể cập nhật trạng thái');
           setToastType('error');
           setShowToast(true);
         }
@@ -117,22 +160,29 @@ export default function InvestmentsPage() { // contact-broker plan: admin can cr
     });
   };
 
-  const handleReject = async (id: number) => {
+  const handleApprove = (id: number) => handleStatusChange(id, InvestmentStatus.APPROVED);
+  const handleReject = (id: number) => handleStatusChange(id, InvestmentStatus.REJECTED);
+
+  const handleDelete = (id: number) => {
     setConfirmDialog({
       open: true,
-      title: 'Từ chối yêu cầu đầu tư',
-      description: 'Bạn có chắc chắn muốn từ chối yêu cầu đầu tư này không? Hành động này không thể hoàn tác.',
+      title: 'Xóa dự án đầu tư',
+      description: 'Bạn có chắc chắn muốn xóa dự án đầu tư này không? Hành động này không thể hoàn tác.',
       variant: 'danger',
       onConfirm: async () => {
         try {
-          await investmentsService.updateInvestmentStatus(id, InvestmentStatus.REJECTED);
-          await loadInvestments();
-          setToastMessage('Đã từ chối yêu cầu đầu tư');
+          await investmentsService.deleteInvestmentAdmin(id);
+          if (investments.length === 1 && page > 1) {
+            setPage(page - 1);
+          } else {
+            await loadInvestments();
+          }
+          setToastMessage('Đã xóa dự án đầu tư');
           setToastType('success');
           setShowToast(true);
         } catch (err: unknown) {
           const error = err as { response?: { data?: { message?: string } } };
-          setToastMessage(error.response?.data?.message || 'Không thể từ chối');
+          setToastMessage(error.response?.data?.message || 'Không thể xóa dự án đầu tư');
           setToastType('error');
           setShowToast(true);
         }
@@ -348,6 +398,38 @@ export default function InvestmentsPage() { // contact-broker plan: admin can cr
                                 </button>
                               </>
                             )}
+                            {investment.status === InvestmentStatus.APPROVED && (
+                              <button
+                                onClick={() => handleStatusChange(investment.id, InvestmentStatus.ACTIVE)}
+                                className="text-green-600 hover:text-green-900"
+                                title="Kích hoạt"
+                              >
+                                <Play size={20} />
+                              </button>
+                            )}
+                            {investment.status !== InvestmentStatus.PENDING && (
+                              <button
+                                onClick={() => handleStatusChange(investment.id, InvestmentStatus.PENDING)}
+                                className="text-yellow-600 hover:text-yellow-900"
+                                title="Đặt lại chờ xử lý"
+                              >
+                                <RotateCcw size={20} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => router.push(`/admin/investments/${investment.id}/edit`)}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="Chỉnh sửa"
+                            >
+                              <Pencil size={20} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(investment.id)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Xóa"
+                            >
+                              <Trash2 size={20} />
+                            </button>
                           </div>
                         </td>
                       </tr>
