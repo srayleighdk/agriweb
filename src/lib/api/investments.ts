@@ -71,6 +71,17 @@ export interface Investment {
     contactRequestId: number;
     unlockedAt?: string | null;
   } | null;
+  approxLocation?: {
+    lat: number;
+    lng: number;
+    radiusMeters: number;
+    precision: 'APPROXIMATE';
+  } | null;
+  preciseLocation?: {
+    lat: number;
+    lng: number;
+    precision: 'EXACT';
+  } | null;
 }
 
 export interface InvestorInvestment {
@@ -250,6 +261,14 @@ class InvestmentsService {
    */
   async updateInvestmentAdmin(id: number, data: Record<string, unknown>): Promise<Investment> {
     const response = await apiClient.patch<Investment>(`/farmer-investments/admin/${id}`, data);
+    return response.data;
+  }
+
+  /**
+   * Admin deletes a farmer investment project
+   */
+  async deleteInvestmentAdmin(id: number): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/farmer-investments/admin/${id}`);
     return response.data;
   }
 }

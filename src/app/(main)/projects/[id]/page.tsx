@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -23,6 +24,7 @@ import {
   CheckCircle,
   DollarSign,
   Lock,
+  Map,
   MapPin,
   Phone,
   Shield,
@@ -53,6 +55,21 @@ function isUsableImageUrl(url?: string | null) {
   if (/example\.com/i.test(url)) return false;
   return true;
 }
+
+const ProjectLocationMap = dynamic(
+  () => import('@/components/maps/ProjectLocationMap'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-[300px] bg-gray-100 rounded-xl">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-green-200 border-t-green-600 mx-auto mb-3"></div>
+          <p className="text-gray-600 text-sm">Đang tải bản đồ...</p>
+        </div>
+      </div>
+    ),
+  },
+);
 
 export default function PublicProjectDetailPage() {
   const params = useParams();
@@ -163,6 +180,7 @@ export default function PublicProjectDetailPage() {
       ? Math.min(100, Math.round((currentAmount / requestedAmount) * 100))
       : 0;
   const remaining = Math.max(0, requestedAmount - currentAmount);
+  const mapLocation = project?.preciseLocation ?? project?.approxLocation ?? null;
 
   const loginHref = `/login?next=${encodeURIComponent(`/projects/${projectId}`)}`;
   const registerHref = `/register?next=${encodeURIComponent(`/projects/${projectId}`)}`;
@@ -389,6 +407,41 @@ export default function PublicProjectDetailPage() {
                   </div>
                 </div>
               </div>
+
+              {mapLocation && (
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Map className="h-5 w-5 text-green-600" />
+                    Vị trí dự án
+                  </h2>
+                  <div className="h-[300px] rounded-xl overflow-hidden">
+                    <ProjectLocationMap
+                      lat={mapLocation.lat}
+                      lng={mapLocation.lng}
+                      precision={mapLocation.precision}
+                      radiusMeters={
+                        mapLocation.precision === 'APPROXIMATE'
+                          ? mapLocation.radiusMeters
+                          : undefined
+                      }
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3 flex items-start gap-1.5">
+                    {mapLocation.precision === 'EXACT' ? (
+                      <>
+                        <Unlock size={14} className="mt-0.5 shrink-0 text-green-600" />
+                        Vị trí chính xác của trang trại.
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={14} className="mt-0.5 shrink-0" />
+                        Vị trí gần đúng trong bán kính ~3km. Mở khóa liên hệ để xem vị trí chính
+                        xác.
+                      </>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Action panel */}
