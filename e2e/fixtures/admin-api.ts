@@ -164,6 +164,70 @@ export function isMinimalDb(): boolean {
   return process.env.E2E_MINIMAL_DB === '1' || process.env.E2E_MINIMAL_DB === 'true';
 }
 
+export async function adminPost(
+  request: APIRequestContext,
+  path: string,
+  data?: unknown,
+): Promise<{ status: number; body: unknown; text: string }> {
+  const token = await getAdminToken(request);
+  const base = getApiBaseUrl();
+  const url = `${base}${path.startsWith('/') ? path : `/${path}`}`;
+  let lastStatus = 0;
+  let lastText = '';
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt > 0) {
+      await new Promise((r) => setTimeout(r, 600 * attempt));
+    }
+    const res = await request.post(url, {
+      data,
+      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+    });
+    lastText = await res.text();
+    lastStatus = res.status();
+    if (lastStatus === 429 && attempt < 5) continue;
+    let body: unknown;
+    try {
+      body = JSON.parse(lastText);
+    } catch {
+      body = lastText;
+    }
+    return { status: lastStatus, body, text: lastText };
+  }
+  return { status: lastStatus, body: lastText, text: lastText };
+}
+
+export async function adminPatch(
+  request: APIRequestContext,
+  path: string,
+  data?: unknown,
+): Promise<{ status: number; body: unknown; text: string }> {
+  const token = await getAdminToken(request);
+  const base = getApiBaseUrl();
+  const url = `${base}${path.startsWith('/') ? path : `/${path}`}`;
+  let lastStatus = 0;
+  let lastText = '';
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt > 0) {
+      await new Promise((r) => setTimeout(r, 600 * attempt));
+    }
+    const res = await request.patch(url, {
+      data,
+      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+    });
+    lastText = await res.text();
+    lastStatus = res.status();
+    if (lastStatus === 429 && attempt < 5) continue;
+    let body: unknown;
+    try {
+      body = JSON.parse(lastText);
+    } catch {
+      body = lastText;
+    }
+    return { status: lastStatus, body, text: lastText };
+  }
+  return { status: lastStatus, body: lastText, text: lastText };
+}
+
 export async function adminDelete(
   request: APIRequestContext,
   path: string,
