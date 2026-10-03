@@ -136,7 +136,7 @@ export default async function globalSetup(_config: FullConfig) {
   const adminAuth = await loginViaApi(apiURL, users.admin, password);
   const headers = { Authorization: `Bearer ${adminAuth.access_token}` };
   try {
-    const usersRes = await fetch(`${apiURL}/auth/admin/users?page=1&limit=20`, { headers });
+    const usersRes = await fetch(`${apiURL}/admin/users?page=1&limit=20`, { headers });
     const farmersRes = await fetch(`${apiURL}/admin/farmers?page=1&limit=5`, { headers });
     const farmlandsRes = await fetch(`${apiURL}/admin/farmlands?page=1&limit=5`, { headers });
     if (usersRes.ok && farmersRes.ok && farmlandsRes.ok) {
@@ -145,7 +145,7 @@ export default async function globalSetup(_config: FullConfig) {
       const farmlandsBody = (await farmlandsRes.json()) as { data?: { id: number }[] };
       async function searchUserId(search: string, role?: string): Promise<number | undefined> {
         const searchRes = await fetch(
-          `${apiURL}/auth/admin/users?search=${encodeURIComponent(search)}&limit=10&page=1`,
+          `${apiURL}/admin/users?search=${encodeURIComponent(search)}&limit=10&page=1`,
           { headers },
         );
         if (!searchRes.ok) return undefined;
