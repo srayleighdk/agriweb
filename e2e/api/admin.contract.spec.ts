@@ -36,8 +36,8 @@ test.describe('Phase 1 — Admin API contracts @api', () => {
     expect(stats.farmlands?.total).toBeGreaterThanOrEqual(1);
   });
 
-  test('GET /auth/admin/users — paginated users', async ({ request }) => {
-    const { status, body } = await adminGet(request, '/auth/admin/users', { page: 1, limit: 5 });
+  test('GET /admin/users — paginated users', async ({ request }) => {
+    const { status, body } = await adminGet(request, '/admin/users', { page: 1, limit: 5 });
     expect(status).toBe(200);
     const { items, total } = extractListMeta(body);
     expect(total).toBeGreaterThanOrEqual(4);

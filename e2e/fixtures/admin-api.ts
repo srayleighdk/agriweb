@@ -101,7 +101,7 @@ async function findUserIdBySearch(
   search: string,
   role?: string,
 ): Promise<number | undefined> {
-  const { status, body } = await adminGet(request, '/auth/admin/users', {
+  const { status, body } = await adminGet(request, '/admin/users', {
     search,
     limit: 10,
     page: 1,

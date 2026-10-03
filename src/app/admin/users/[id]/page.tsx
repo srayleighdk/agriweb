@@ -90,7 +90,16 @@ export default function UserDetailPage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      await apiClient.patch(`/admin/users/${userId}`, formData);
+      const { name, email, phone, address, province, commune, role } = formData;
+      await apiClient.patch(`/admin/users/${userId}`, {
+        name,
+        email,
+        phone,
+        address,
+        province,
+        commune,
+        role,
+      });
       await loadUser();
       setEditing(false);
       setToastMessage('User updated successfully');
