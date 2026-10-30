@@ -24,6 +24,12 @@ test.describe('Public smoke @smoke', () => {
     await expect(page.locator('body')).toBeVisible();
   });
 
+  test('trace page explains an unknown batch code', async ({ page }) => {
+    const res = await page.goto('/trace/AGNOTREAL2');
+    expect(res?.status()).toBe(404);
+    await expect(page.getByRole('heading', { name: 'Không tìm thấy lô hàng' })).toBeVisible();
+  });
+
   test('main host blocks /admin routes', async ({ page }) => {
     await page.goto('/admin/login');
     await expect(page).not.toHaveURL(/\/admin\/login/);
